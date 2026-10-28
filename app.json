@@ -19,7 +19,17 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
-    ]
+      "expo-router",
+      "expo-font"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "45d9dbdb-9405-4335-94c1-8c85a99a20fa"
+      }
+    },
+    "owner": "leayaaah"
   }
 }
