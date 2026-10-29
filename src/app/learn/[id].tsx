@@ -24,7 +24,7 @@ const initialLoadState = <T,>(): LoadState<T> => ({ loading: true, error: null, 
 const tabs: { key: Tab; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { key: 'lessons', label: 'Bài học', icon: 'play-circle-outline' },
   { key: 'qa', label: 'Hỏi đáp', icon: 'chatbubbles-outline' },
-  { key: 'resources', label: 'Dự án', icon: 'folder-open-outline' },
+  { key: 'resources', label: 'Tài liệu', icon: 'folder-open-outline' },
 ];
 
 export default function LearnScreen() {
