@@ -51,6 +51,17 @@ export async function enroll(userId: string, courseId: number) {
   if (error && error.code !== '23505') throw error; // 23505: đã ghi danh rồi
 }
 
+export async function isEnrolled(userId: string, courseId: number): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('enrollments')
+    .select('course_id')
+    .eq('user_id', userId)
+    .eq('course_id', courseId)
+    .maybeSingle();
+  if (error) throw error;
+  return data !== null;
+}
+
 export async function getCompletedLessonIds(userId: string, courseId: number): Promise<number[]> {
   const { data, error } = await supabase
     .from('lesson_progress').select('lesson_id').eq('user_id', userId).eq('course_id', courseId);
