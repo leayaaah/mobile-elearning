@@ -39,8 +39,14 @@ const tabs: { key: DetailTab; label: string }[] = [
 ];
 
 export default function CourseDetailScreen() {
-  const { id: rawId } = useLocalSearchParams<{ id?: string | string[] }>();
+  const { id: rawId, enrollmentRequired: rawEnrollmentRequired } = useLocalSearchParams<{
+    id?: string | string[];
+    enrollmentRequired?: string | string[];
+  }>();
   const routeId = Array.isArray(rawId) ? rawId[0] : rawId;
+  const enrollmentRequired = Array.isArray(rawEnrollmentRequired)
+    ? rawEnrollmentRequired[0] === '1'
+    : rawEnrollmentRequired === '1';
   const courseId = Number(routeId);
   const { user } = useAuth();
   const router = useRouter();
@@ -55,7 +61,9 @@ export default function CourseDetailScreen() {
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [action, setAction] = useState<'cart' | 'enroll' | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(
+    enrollmentRequired ? 'Bạn chưa ghi danh khóa học này. Hãy ghi danh để bắt đầu học.' : null,
+  );
   const [isEnrolledNow, setIsEnrolledNow] = useState(false);
 
   const enrolled = Boolean(data?.enrolled || isEnrolledNow);
