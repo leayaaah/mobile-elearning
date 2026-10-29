@@ -16,11 +16,11 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
+        tabBarActiveTintColor: String(colors.primary),
+        tabBarInactiveTintColor: String(colors.textMuted),
         tabBarIcon: ({ focused, color, size }) => {
           const [off, on] = TAB_ICONS[route.name] ?? ['ellipse-outline', 'ellipse'];
-          return <Ionicons name={focused ? on : off} size={size} color={color} />;
+          return <Ionicons name={focused ? on : off} size={size} color={String(color)} />;
         },
       })}
     >
