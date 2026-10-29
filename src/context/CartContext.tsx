@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from './AuthContext';
-import { addToCart, checkout as checkoutRpc, getCartCourses, removeFromCart } from '../services/cartService';
+import { addToCart, checkout as checkoutRpc, getCartCourses, getEnrolledCourseIds, removeFromCart } from '../services/cartService';
 import type { Course } from '../types';
 
 type CartContextValue = {
@@ -19,7 +19,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [items, setItems] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     if (!user) {
@@ -28,25 +28,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true);
     try {
-      setItems(await getCartCourses(user.id));
-    } catch {
-      // giữ nguyên giỏ hàng hiện tại nếu lỗi mạng
+      const [courses, enrolledIds] = await Promise.all([getCartCourses(user.id), getEnrolledCourseIds(user.id)]);
+      setItems(courses.filter((course) => !enrolledIds.includes(course.id)));
+    } catch (error) {
+      throw error;
     } finally {
       setLoading(false);
     }
   }, [user]);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    let active = true;
+    if (!user) {
+      Promise.resolve().then(() => {
+        if (active) {
+          setItems([]);
+          setLoading(false);
+        }
+      });
+      return () => { active = false; };
+    }
+    Promise.all([getCartCourses(user.id), getEnrolledCourseIds(user.id)])
+      .then(([courses, enrolledIds]) => {
+        if (active) {
+          setItems(courses.filter((course) => !enrolledIds.includes(course.id)));
+          setLoading(false);
+        }
+      })
+      .catch(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [user]);
 
   const add = useCallback(
     async (course: Course) => {
       if (!user) return;
+      if (items.some((item) => item.id === course.id)) return;
       await addToCart(user.id, course.id);
       setItems((prev) => (prev.some((c) => c.id === course.id) ? prev : [course, ...prev]));
     },
-    [user],
+    [items, user],
   );
 
   const remove = useCallback(
