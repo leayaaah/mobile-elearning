@@ -62,7 +62,7 @@ supabase/               # schema.sql, seed.sql
 | Trang chủ | Xong (có cache, kéo để làm mới) | – |
 | Tìm kiếm + kết quả | TODO | `searchCourses`, `useDebounce` |
 | Chi tiết khóa học | TODO | `getCourseById`, `getCurriculum`, `getReviews`, `getSimilarCourses`, `useCart().add` |
-| Màn học | TODO | `getCurriculum`, `getResources`, `getQAPosts`, `markLessonDone` |
+| Màn học | Xong (kiểm tra ghi danh, bài học/tiến độ, hỏi đáp, tài liệu) | `isEnrolled`, `getCurriculum`, `getCompletedLessonIds`, `markLessonDone`, `getResources`, `getQAPosts`, `createQAPost` |
 | Khóa học của tôi | TODO | `getMyCourses`, `enroll` |
 | Hồ sơ giảng viên | TODO | `getTeacher`, `getTeacherCourses` |
 | Hồ sơ người dùng | TODO | `getProfile`, `getSavedCourses`, `signOut` |
@@ -71,6 +71,8 @@ supabase/               # schema.sql, seed.sql
 
 ## Lưu ý
 
-- Video bài học trong seed đang dùng một link mẫu chung; thay bằng video thật khi làm màn học.
-- Để test "Khóa học của tôi" khi chưa làm checkout, dùng `enroll(userId, courseId)` (schema đang cho phép tự ghi danh; có thể xóa policy `insert own enrollments` khi dùng `checkout_cart()`).
+- Video bài học trong seed đang dùng một link mẫu chung; thay bằng video thật sau cùng. Màn học hiện mở liên kết video bằng trình duyệt/ứng dụng phù hợp trên thiết bị.
+- `insert own enrollments` được giữ tạm trong schema để kiểm thử trước khi hoàn tất luồng checkout ở Bước 7; sau khi checkout chạy được, cần bỏ policy này và chỉ cho phép ghi danh qua `checkout_cart()`.
+- `course_resources` và `qa_posts` chỉ đọc được bởi người đã ghi danh; `lesson_progress` chỉ được thêm khi bài thuộc khóa học đã ghi danh. `video_url` vẫn được đọc công khai qua policy `lessons` hiện tại.
+- Policy tiến độ hiện không cho xóa bản ghi hoàn thành, nên màn học chỉ hỗ trợ đánh dấu hoàn thành một chiều.
 - Code chưa được chạy thử trên thiết bị (đã kiểm tra cú pháp), nếu gặp lỗi build hãy gửi log để sửa.

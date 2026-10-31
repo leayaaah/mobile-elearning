@@ -71,6 +71,22 @@ export async function getCompletedLessonIds(userId: string, courseId: number): P
 
 export async function markLessonDone(userId: string, courseId: number, lessonId: number) {
   const { error } = await supabase
-    .from('lesson_progress').upsert({ user_id: userId, course_id: courseId, lesson_id: lessonId });
+    .from('lesson_progress')
+    .upsert(
+      { user_id: userId, course_id: courseId, lesson_id: lessonId },
+      { onConflict: 'user_id,lesson_id', ignoreDuplicates: true },
+    );
+  if (error) throw error;
+}
+
+export async function createQAPost(userId: string, courseId: number, content: string) {
+  const profile = await getProfile(userId);
+  const { error } = await supabase.from('qa_posts').insert({
+    user_id: userId,
+    course_id: courseId,
+    author_name: profile.full_name.trim() || 'Học viên',
+    author_avatar: profile.avatar_url,
+    content: content.trim(),
+  });
   if (error) throw error;
 }
