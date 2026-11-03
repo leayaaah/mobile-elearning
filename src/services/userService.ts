@@ -36,7 +36,11 @@ export async function getSavedCourses(userId: string): Promise<Course[]> {
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return (data ?? []).map((r: any) => r.course as Course);
+  type SavedCourseRow = { course: Course | Course[] | null };
+  const rows = (data ?? []) as unknown as SavedCourseRow[];
+  return rows
+    .map((row) => Array.isArray(row.course) ? row.course[0] : row.course)
+    .filter((course): course is Course => course != null);
 }
 
 // ---------- Khóa học của tôi ----------
