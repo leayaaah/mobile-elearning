@@ -34,6 +34,8 @@ Video thay link mẫu sau cùng (bạn nói sẽ tự làm).
 
 Bước 6. Khóa học của tôi, Hồ sơ, Giảng viên (01–02/11)
 
+Trạng thái: Đã triển khai trên nhánh `feature/step-6-my-courses-profile-teacher`.
+
 Khóa học của tôi: 3 tab Tất cả / Đang học / Hoàn thành, thanh tiến độ, từ my_courses.
 Hồ sơ: 3 số thống kê, danh sách đã lưu, sửa họ tên, đăng xuất.
 Hồ sơ giảng viên: thông tin và các khóa.

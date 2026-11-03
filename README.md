@@ -1,6 +1,6 @@
 # E-Learning App – bộ khung khởi đầu (Expo Router + TypeScript + Supabase)
 
-Gói này gồm **schema + dữ liệu mẫu Supabase** và **code nền** (đăng nhập, context, service, cache, Trang chủ hoàn chỉnh, các màn còn lại là placeholder có ghi TODO).
+Gói này gồm **schema + dữ liệu mẫu Supabase** và **code nền** (đăng nhập, context, service, cache, Trang chủ và các màn hình Bước 6 đã triển khai).
 
 ## 1. Tạo project Expo và ghép code
 
@@ -63,9 +63,9 @@ supabase/               # schema.sql, seed.sql
 | Tìm kiếm + kết quả | TODO | `searchCourses`, `useDebounce` |
 | Chi tiết khóa học | TODO | `getCourseById`, `getCurriculum`, `getReviews`, `getSimilarCourses`, `useCart().add` |
 | Màn học | TODO | `getCurriculum`, `getResources`, `getQAPosts`, `markLessonDone` |
-| Khóa học của tôi | TODO | `getMyCourses`, `enroll` |
-| Hồ sơ giảng viên | TODO | `getTeacher`, `getTeacherCourses` |
-| Hồ sơ người dùng | TODO | `getProfile`, `getSavedCourses`, `signOut` |
+| Khóa học của tôi | Xong Bước 6 | `getMyCourses` |
+| Hồ sơ giảng viên | Xong Bước 6 | `getTeacher`, `getTeacherCourses` |
+| Hồ sơ người dùng | Xong Bước 6 | `getProfile`, `getSavedCourses`, `updateProfile`, `signOut` |
 | Giỏ hàng | TODO | `useCart()` |
 | Thanh toán giả lập (mở rộng) | Sẵn RPC | `useCart().checkout()` |
 
