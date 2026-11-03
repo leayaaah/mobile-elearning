@@ -8,10 +8,25 @@ export async function getCartCourses(userId: string): Promise<Course[]> {
     .eq('user_id', userId)
     .order('added_at', { ascending: false });
   if (error) throw error;
-  return (data ?? []).map((r: any) => r.course as Course);
+  return (data ?? []).flatMap((row) => (row.course ? [row.course as unknown as Course] : []));
+}
+
+export async function getEnrolledCourseIds(userId: string): Promise<number[]> {
+  const { data, error } = await supabase.from('enrollments').select('course_id').eq('user_id', userId);
+  if (error) throw error;
+  return (data ?? []).map((row) => Number(row.course_id));
 }
 
 export async function addToCart(userId: string, courseId: number) {
+  const { data: enrollment, error: enrollmentError } = await supabase
+    .from('enrollments')
+    .select('course_id')
+    .eq('user_id', userId)
+    .eq('course_id', courseId)
+    .maybeSingle();
+  if (enrollmentError) throw enrollmentError;
+  if (enrollment) throw new Error('Bạn đã ghi danh khóa học này rồi.');
+
   const { error } = await supabase.from('cart_items').upsert({ user_id: userId, course_id: courseId });
   if (error) throw error;
 }

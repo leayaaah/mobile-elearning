@@ -15,11 +15,27 @@ export function BookmarkProvider({ children }: { children: ReactNode }) {
   const [ids, setIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
+    let active = true;
+
     if (!user) {
-      setIds(new Set());
-      return;
+      // Defer the reset so the effect does not synchronously cascade a render.
+      Promise.resolve().then(() => {
+        if (active) setIds(new Set());
+      });
+      return () => { active = false; };
     }
-    getBookmarkIds(user.id).then((list) => setIds(new Set(list))).catch(() => {});
+
+    getBookmarkIds(user.id)
+      .then((list) => {
+        if (active) setIds(new Set(list));
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        setIds(new Set());
+        console.warn('Không thể tải danh sách khóa học đã lưu.', error);
+      });
+
+    return () => { active = false; };
   }, [user]);
 
   const isSaved = useCallback((id: number) => ids.has(id), [ids]);
@@ -31,7 +47,8 @@ export function BookmarkProvider({ children }: { children: ReactNode }) {
       const was = ids.has(courseId);
       setIds((prev) => {
         const next = new Set(prev);
-        was ? next.delete(courseId) : next.add(courseId);
+        if (was) next.delete(courseId);
+        else next.add(courseId);
         return next;
       });
       try {
@@ -40,7 +57,8 @@ export function BookmarkProvider({ children }: { children: ReactNode }) {
       } catch {
         setIds((prev) => {
           const next = new Set(prev);
-          was ? next.add(courseId) : next.delete(courseId);
+          if (was) next.add(courseId);
+          else next.delete(courseId);
           return next;
         });
       }

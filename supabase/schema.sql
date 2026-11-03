@@ -217,6 +217,16 @@ begin
 end $$;
 grant execute on function public.checkout_cart() to authenticated;
 
+-- Hàm dùng trong RLS để xác nhận người dùng đã ghi danh khóa học.
+create or replace function public.is_enrolled(p_course bigint)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.enrollments
+    where user_id = auth.uid() and course_id = p_course
+  );
+$$;
+grant execute on function public.is_enrolled(bigint) to authenticated;
+
 -- ---------- Row Level Security ----------
 alter table public.categories        enable row level security;
 alter table public.teachers          enable row level security;
@@ -241,12 +251,16 @@ create policy "public read" on public.courses          for select using (true);
 create policy "public read" on public.sections         for select using (true);
 create policy "public read" on public.lessons          for select using (true);
 create policy "public read" on public.reviews          for select using (true);
-create policy "public read" on public.course_resources for select using (true);
-create policy "public read" on public.qa_posts         for select using (true);
+create policy "enrolled read" on public.course_resources
+  for select to authenticated using (public.is_enrolled(course_id));
+create policy "enrolled read" on public.qa_posts
+  for select to authenticated using (public.is_enrolled(course_id));
 
--- Đánh giá & hỏi đáp: người dùng đăng nhập được thêm bài của chính mình
+-- Đánh giá: người dùng đăng nhập thêm bài của mình; hỏi đáp yêu cầu đã ghi danh.
 create policy "insert own review" on public.reviews  for insert to authenticated with check (auth.uid() = user_id);
-create policy "insert own qa"     on public.qa_posts for insert to authenticated with check (auth.uid() = user_id);
+create policy "enrolled insert qa" on public.qa_posts
+  for insert to authenticated
+  with check (auth.uid() = user_id and public.is_enrolled(course_id));
 
 -- Profile
 create policy "read own profile"   on public.profiles for select to authenticated using (auth.uid() = id);
@@ -255,10 +269,20 @@ create policy "update own profile" on public.profiles for update to authenticate
 -- Bảng của riêng người dùng
 create policy "own bookmarks" on public.bookmarks       for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "own cart"      on public.cart_items      for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create policy "own progress"  on public.lesson_progress for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "read own progress" on public.lesson_progress
+  for select to authenticated using (auth.uid() = user_id);
+create policy "insert progress if enrolled" on public.lesson_progress
+  for insert to authenticated
+  with check (
+    auth.uid() = user_id
+    and public.is_enrolled(course_id)
+    and exists (select 1 from public.lessons l
+                where l.id = lesson_progress.lesson_id
+                  and l.course_id = lesson_progress.course_id)
+  );
 
 -- Ghi danh: cho phép tự ghi danh để test "Khóa học của tôi".
--- Khi dùng checkout_cart() thì có thể xóa policy insert này.
+-- Giữ policy insert tạm thời để tiếp tục kiểm thử trước khi luồng checkout hoàn tất (Bước 7).
 create policy "read own enrollments"   on public.enrollments for select to authenticated using (auth.uid() = user_id);
 create policy "insert own enrollments" on public.enrollments for insert to authenticated with check (auth.uid() = user_id);
 

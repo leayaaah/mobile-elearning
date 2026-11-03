@@ -13,13 +13,19 @@ import { useBookmarks } from '../../context/BookmarkContext';
 import { useCart } from '../../context/CartContext';
 import { useAsync } from '../../hooks/useAsync';
 import { getCourseById, getCurriculum, getReviews } from '../../services/courseService';
-import { enroll, isEnrolled } from '../../services/userService';
+import { enroll, getCompletedLessonIds, isEnrolled } from '../../services/userService';
 import { colors, fontSize, radius, spacing } from '../../theme';
 import type { Course, Review, Section } from '../../types';
 import { formatMinutes, formatPrice, getErrorMessage, timeAgo } from '../../utils/format';
 
 type DetailTab = 'overview' | 'lessons' | 'reviews';
-type CourseDetails = { course: Course; sections: Section[]; reviews: Review[]; enrolled: boolean };
+type CourseDetails = {
+  course: Course;
+  sections: Section[];
+  reviews: Review[];
+  enrolled: boolean;
+  completedLessonCount: number;
+};
 
 async function loadCourseDetails(courseId: number, userId?: string): Promise<CourseDetails> {
   if (!Number.isInteger(courseId) || courseId < 1) throw new Error('Không tìm thấy khóa học');
@@ -29,7 +35,10 @@ async function loadCourseDetails(courseId: number, userId?: string): Promise<Cou
     getReviews(courseId),
     userId ? isEnrolled(userId, courseId) : Promise.resolve(false),
   ]);
-  return { course, sections, reviews, enrolled };
+  const completedLessonIds = userId && enrolled
+    ? await getCompletedLessonIds(userId, courseId)
+    : [];
+  return { course, sections, reviews, enrolled, completedLessonCount: completedLessonIds.length };
 }
 
 const tabs: { key: DetailTab; label: string }[] = [
@@ -39,8 +48,14 @@ const tabs: { key: DetailTab; label: string }[] = [
 ];
 
 export default function CourseDetailScreen() {
-  const { id: rawId } = useLocalSearchParams<{ id?: string | string[] }>();
+  const { id: rawId, enrollmentRequired: rawEnrollmentRequired } = useLocalSearchParams<{
+    id?: string | string[];
+    enrollmentRequired?: string | string[];
+  }>();
   const routeId = Array.isArray(rawId) ? rawId[0] : rawId;
+  const enrollmentRequired = Array.isArray(rawEnrollmentRequired)
+    ? rawEnrollmentRequired[0] === '1'
+    : rawEnrollmentRequired === '1';
   const courseId = Number(routeId);
   const { user } = useAuth();
   const router = useRouter();
@@ -55,7 +70,9 @@ export default function CourseDetailScreen() {
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [action, setAction] = useState<'cart' | 'enroll' | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(
+    enrollmentRequired ? 'Bạn chưa ghi danh khóa học này. Hãy ghi danh để bắt đầu học.' : null,
+  );
   const [isEnrolledNow, setIsEnrolledNow] = useState(false);
 
   const enrolled = Boolean(data?.enrolled || isEnrolledNow);
@@ -139,8 +156,10 @@ export default function CourseDetailScreen() {
                 course={data.course}
                 saved={saved}
                 enrolled={enrolled}
+                completedLessonCount={data.completedLessonCount}
                 onToggleBookmark={() => void toggle(data.course.id)}
                 onEnroll={() => void enrollForFree()}
+                onStartLearning={() => router.push(`/learn/${data.course.id}`)}
                 enrolling={action === 'enroll'}
                 onOpenTeacher={data.course.teacher ? () => router.push(`/teacher/${data.course.teacher?.id}`) : undefined}
               />
@@ -196,13 +215,15 @@ export default function CourseDetailScreen() {
 }
 
 function OverviewTab({
-  course, saved, enrolled, onToggleBookmark, onEnroll, enrolling, onOpenTeacher,
+  course, saved, enrolled, completedLessonCount, onToggleBookmark, onEnroll, onStartLearning, enrolling, onOpenTeacher,
 }: {
   course: Course;
   saved: boolean;
   enrolled: boolean;
+  completedLessonCount: number;
   onToggleBookmark: () => void;
   onEnroll: () => void;
+  onStartLearning: () => void;
   enrolling: boolean;
   onOpenTeacher?: () => void;
 }) {
@@ -251,10 +272,12 @@ function OverviewTab({
         <Text style={styles.description}>{course.description || 'Khóa học chưa có phần giới thiệu.'}</Text>
 
         {enrolled ? (
-          <View style={styles.enrolledPill}>
-            <Ionicons name="checkmark-circle" size={19} color={colors.primary} />
-            <Text style={styles.enrolledText}>Bạn đã ghi danh khóa học này</Text>
-          </View>
+          <Pressable accessibilityRole="button" onPress={onStartLearning} style={styles.learningButton}>
+            <Ionicons name="play-circle-outline" size={20} color="#fff" />
+            <Text style={styles.learningButtonText}>
+              {completedLessonCount > 0 ? 'Tiếp tục học' : 'Bắt đầu học'}
+            </Text>
+          </Pressable>
         ) : (
           <Pressable onPress={onEnroll} disabled={enrolling} style={[styles.enrollButton, enrolling && styles.disabledButton]}>
             {enrolling ? <ActivityIndicator color="#fff" /> : (
@@ -419,8 +442,8 @@ const styles = StyleSheet.create({
   enrollButton: { minHeight: 48, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.purple, borderRadius: radius.md, marginTop: spacing.lg },
   enrollButtonText: { color: '#fff', fontSize: fontSize.md, fontWeight: '700' },
   disabledButton: { opacity: 0.55 },
-  enrolledPill: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md, marginTop: spacing.lg, backgroundColor: colors.primarySoft, borderRadius: radius.md },
-  enrolledText: { color: colors.primary, fontSize: fontSize.md, fontWeight: '700' },
+  learningButton: { minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginTop: spacing.lg, backgroundColor: colors.primary, borderRadius: radius.md },
+  learningButtonText: { color: '#fff', fontSize: fontSize.md, fontWeight: '700' },
   bottomBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   priceBlock: { flex: 1 },
   price: { color: colors.primary, fontSize: fontSize.xl, fontWeight: '800' },
