@@ -23,7 +23,9 @@ function AuthGate() {
   return (
     <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="chat" options={{ presentation: 'transparentModal', animation: 'fade', contentStyle: { backgroundColor: 'transparent' } }} />
+      </Stack>
       {loading && (
         <View style={StyleSheet.absoluteFill}>
           <Loading />
