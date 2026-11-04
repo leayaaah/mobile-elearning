@@ -106,16 +106,18 @@ function Stat({ value, label }: { value: string; label: string }) { return <View
 
 function SavedCourseRow({ course, onRemove, onOpen }: { course: Course; onRemove: () => void; onOpen: () => void }) {
   return (
-    <Pressable style={styles.courseRow} onPress={onOpen} accessibilityRole="button">
-      <Image source={course.thumbnail_url} style={styles.courseImage} contentFit="cover" />
-      <View style={styles.courseInfo}>
-        <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
-        {course.teacher && <Text style={styles.courseTeacher} numberOfLines={1}>{course.teacher.full_name}</Text>}
-      </View>
+    <View style={styles.courseRow}>
+      <Pressable style={styles.courseOpen} onPress={onOpen} accessibilityRole="button">
+        <Image source={course.thumbnail_url} style={styles.courseImage} contentFit="cover" />
+        <View style={styles.courseInfo}>
+          <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
+          {course.teacher && <Text style={styles.courseTeacher} numberOfLines={1}>{course.teacher.full_name}</Text>}
+        </View>
+      </Pressable>
       <Pressable onPress={onRemove} accessibilityRole="button" accessibilityLabel="Bỏ lưu khóa học" style={styles.removeSavedButton}>
         <Ionicons name="bookmark" size={22} color={uiColors.primary} />
       </Pressable>
-    </Pressable>
+    </View>
   );
 }
 
@@ -124,7 +126,7 @@ const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: uiSpacing.md, padding: uiSpacing.md, marginBottom: uiSpacing.md, backgroundColor: uiColors.surface, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.lg, ...uiShadow.small },
   avatarWrap: { width: 64, height: 64, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.pill, backgroundColor: uiColors.primarySoft, overflow: 'hidden' }, avatar: { width: '100%', height: '100%' }, initials: { color: uiColors.primary, ...uiType.headlineLarge, fontWeight: '800' }, identity: { flex: 1, minWidth: 0 }, name: { color: uiColors.text, ...uiType.headlineMedium, fontWeight: '800' }, email: { color: uiColors.textMuted, ...uiType.bodySmall, marginTop: uiSpacing.xs },
   stats: { flexDirection: 'row', paddingVertical: uiSpacing.md, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, borderWidth: 1, borderColor: uiColors.border, ...uiShadow.small }, stat: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: uiSpacing.xs }, statValue: { color: uiColors.primary, ...uiType.headlineLarge, fontWeight: '800' }, statLabel: { color: uiColors.textMuted, ...uiType.labelSmall, marginTop: uiSpacing.xs, textAlign: 'center' },
-  sectionTitle: { color: uiColors.text, ...uiType.headlineMedium, marginTop: uiSpacing.lg, marginBottom: uiSpacing.md }, courseRow: { flexDirection: 'row', alignItems: 'center', gap: uiSpacing.md, padding: uiSpacing.md, marginBottom: uiSpacing.md, backgroundColor: uiColors.surface, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.lg, ...uiShadow.small }, courseImage: { width: 88, height: 88, borderRadius: uiRadius.md, backgroundColor: uiColors.surfaceContainer }, courseInfo: { flex: 1, minWidth: 0 }, courseTitle: { color: uiColors.text, ...uiType.bodyLarge, fontWeight: '700' }, courseTeacher: { color: uiColors.textMuted, ...uiType.bodySmall, marginTop: uiSpacing.xs }, empty: { alignItems: 'center', padding: uiSpacing.xl, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, ...uiShadow.small }, emptyTitle: { color: uiColors.text, ...uiType.headlineSmall, marginTop: uiSpacing.md }, emptyText: { color: uiColors.textMuted, ...uiType.bodyMedium, textAlign: 'center', marginTop: uiSpacing.sm },
+  sectionTitle: { color: uiColors.text, ...uiType.headlineMedium, marginTop: uiSpacing.lg, marginBottom: uiSpacing.md }, courseRow: { flexDirection: 'row', alignItems: 'center', gap: uiSpacing.md, padding: uiSpacing.md, marginBottom: uiSpacing.md, backgroundColor: uiColors.surface, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.lg, ...uiShadow.small }, courseOpen: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: uiSpacing.md, minHeight: 88 }, courseImage: { width: 88, height: 88, borderRadius: uiRadius.md, backgroundColor: uiColors.surfaceContainer }, courseInfo: { flex: 1, minWidth: 0 }, courseTitle: { color: uiColors.text, ...uiType.bodyLarge, fontWeight: '700' }, courseTeacher: { color: uiColors.textMuted, ...uiType.bodySmall, marginTop: uiSpacing.xs }, empty: { alignItems: 'center', padding: uiSpacing.xl, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, ...uiShadow.small }, emptyTitle: { color: uiColors.text, ...uiType.headlineSmall, marginTop: uiSpacing.md }, emptyText: { color: uiColors.textMuted, ...uiType.bodyMedium, textAlign: 'center', marginTop: uiSpacing.sm },
   logout: { minHeight: 48, margin: uiSpacing.gutter, marginTop: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: uiColors.dangerSoft, borderWidth: 1, borderColor: uiColors.danger, borderRadius: uiRadius.md }, logoutText: { color: uiColors.danger, ...uiType.labelLarge, fontWeight: '700' }, actionError: { color: uiColors.danger, ...uiType.bodySmall, textAlign: 'center', paddingHorizontal: uiSpacing.gutter, marginBottom: uiSpacing.sm },
   editButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.md, backgroundColor: uiColors.surfaceLow },
   removeSavedButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.pill, backgroundColor: uiColors.surfaceLow },

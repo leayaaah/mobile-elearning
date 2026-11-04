@@ -233,16 +233,18 @@ export default function LearnScreen() {
                     const done = completedSet.has(lesson.id);
                     const selected = lesson.id === selectedLesson?.id;
                     return (
-                      <Pressable key={lesson.id} style={[styles.lessonRow, selected && styles.lessonRowActive]} onPress={() => setSelectedLessonId(lesson.id)}>
-                        <Ionicons name={done ? 'checkmark-circle' : 'play-circle-outline'} size={22} color={done ? uiColors.primary : uiColors.textMuted} />
-                        <Text style={[styles.lessonTitle, selected && styles.lessonTitleActive]} numberOfLines={2}>{lesson.title}</Text>
-                        <Text style={styles.lessonDuration}>{formatDuration(lesson.duration_seconds)}</Text>
+                      <View key={lesson.id} style={[styles.lessonRow, selected && styles.lessonRowActive]}>
+                        <Pressable style={styles.lessonSelect} onPress={() => setSelectedLessonId(lesson.id)} accessibilityRole="button">
+                          <Ionicons name={done ? 'checkmark-circle' : 'play-circle-outline'} size={22} color={done ? uiColors.primary : uiColors.textMuted} />
+                          <Text style={[styles.lessonTitle, selected && styles.lessonTitleActive]} numberOfLines={2}>{lesson.title}</Text>
+                          <Text style={styles.lessonDuration}>{formatDuration(lesson.duration_seconds)}</Text>
+                        </Pressable>
                         {done ? null : (
-                          <Pressable accessibilityRole="button" accessibilityLabel={`Đánh dấu ${lesson.title} hoàn thành`} hitSlop={12} onPress={() => { void completeLesson(lesson); }}>
+                          <Pressable style={styles.lessonComplete} accessibilityRole="button" accessibilityLabel={`Đánh dấu ${lesson.title} hoàn thành`} onPress={() => { void completeLesson(lesson); }}>
                             {savingLessonId === lesson.id ? <ActivityIndicator color={uiColors.primary} /> : <Feather name="check" size={18} color={uiColors.primary} />}
                           </Pressable>
                         )}
-                      </Pressable>
+                      </View>
                     );
                   })}
                 </View>
@@ -349,6 +351,8 @@ const styles = StyleSheet.create({
   sectionCard: { backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, borderWidth: 1, borderColor: uiColors.border, overflow: 'hidden', ...uiShadow.small },
   sectionTitle: { color: uiColors.text, fontSize: uiType.bodyMedium.fontSize, fontWeight: '700', padding: uiSpacing.md },
   lessonRow: { minHeight: 54, flexDirection: 'row', alignItems: 'center', gap: uiSpacing.sm, paddingHorizontal: uiSpacing.md, borderTopWidth: 1, borderTopColor: uiColors.border },
+  lessonSelect: { flex: 1, minWidth: 0, minHeight: 54, flexDirection: 'row', alignItems: 'center', gap: uiSpacing.sm },
+  lessonComplete: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   lessonRowActive: { backgroundColor: uiColors.primarySoft },
   lessonTitle: { flex: 1, color: uiColors.text, fontSize: uiType.bodySmall.fontSize },
   lessonTitleActive: { color: uiColors.primary, fontWeight: '700' },
