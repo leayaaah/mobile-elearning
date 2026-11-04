@@ -6,7 +6,7 @@ import { getMyCourses } from '../../services/userService';
 import { useAsync } from '../../hooks/useAsync';
 import { ErrorView, Loading } from '../../components/ScreenState';
 import { MyCourseCard } from '../../components/MyCourseCard';
-import { colors, fontSize, radius, spacing } from '../../theme';
+import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 
 type Filter = 'all' | 'learning' | 'completed';
 const FILTERS: { key: Filter; label: string }[] = [
@@ -51,7 +51,7 @@ export default function MyCoursesScreen() {
         keyExtractor={(item) => String(item.course_id)}
         renderItem={({ item }) => <MyCourseCard course={item} />}
         ListEmptyComponent={renderEmpty}
-        refreshControl={<RefreshControl refreshing={request.loading} onRefresh={request.reload} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={request.loading} onRefresh={request.reload} tintColor={uiColors.primary} />}
         showsVerticalScrollIndicator={false}
       />
       {request.error && <Text style={styles.refreshError}>{request.error}</Text>}
@@ -60,17 +60,17 @@ export default function MyCoursesScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm },
-  heading: { color: colors.text, fontSize: fontSize.xxl, fontWeight: '800' },
-  tabs: { flexDirection: 'row', marginHorizontal: spacing.lg, marginBottom: spacing.md, padding: spacing.xs, backgroundColor: colors.surface, borderRadius: radius.md },
-  tab: { flex: 1, alignItems: 'center', paddingVertical: spacing.sm, borderRadius: radius.sm },
-  tabActive: { backgroundColor: colors.primarySoft },
-  tabText: { color: colors.textMuted, fontSize: fontSize.sm, fontWeight: '600' },
-  tabTextActive: { color: colors.primary },
-  list: { flexGrow: 1, padding: spacing.lg, paddingTop: 0 },
-  empty: { alignItems: 'center', padding: spacing.xxl, marginTop: spacing.xxl },
-  emptyTitle: { color: colors.text, fontSize: fontSize.lg, fontWeight: '700', textAlign: 'center' },
-  emptyText: { color: colors.textMuted, fontSize: fontSize.sm, textAlign: 'center', marginTop: spacing.sm },
-  refreshError: { color: colors.danger, fontSize: fontSize.xs, textAlign: 'center', padding: spacing.sm },
+  screen: { flex: 1, backgroundColor: uiColors.background },
+  header: { paddingHorizontal: uiSpacing.gutter, paddingTop: uiSpacing.md, paddingBottom: uiSpacing.sm },
+  heading: { color: uiColors.text, ...uiType.headlineLarge },
+  tabs: { flexDirection: 'row', marginHorizontal: uiSpacing.gutter, marginBottom: uiSpacing.md, padding: uiSpacing.xs, backgroundColor: uiColors.surface, borderRadius: uiRadius.md, ...uiShadow.small },
+  tab: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.sm },
+  tabActive: { backgroundColor: uiColors.primarySoft },
+  tabText: { color: uiColors.textMuted, ...uiType.labelMedium },
+  tabTextActive: { color: uiColors.primary },
+  list: { flexGrow: 1, paddingHorizontal: uiSpacing.gutter, paddingBottom: uiSpacing.xl },
+  empty: { alignItems: 'center', padding: uiSpacing.xl, marginTop: uiSpacing.xl },
+  emptyTitle: { color: uiColors.text, ...uiType.headlineSmall, textAlign: 'center' },
+  emptyText: { color: uiColors.textMuted, ...uiType.bodyMedium, textAlign: 'center', marginTop: uiSpacing.sm },
+  refreshError: { color: uiColors.danger, ...uiType.bodySmall, textAlign: 'center', padding: uiSpacing.sm },
 });
