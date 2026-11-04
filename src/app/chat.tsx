@@ -1,16 +1,16 @@
-import { useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { useRef } from 'react';
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CourseCard } from '../components/CourseCard';
 import { ChatBubble } from '../components/ChatBubble';
 import { useAuth } from '../context/AuthContext';
+import { useChatSession, type ChatMessage } from '../context/ChatSessionContext';
 import { sendAdvisorMessage } from '../services/chatService';
-import { AdvisorError, type AdvisorReply, type ChatTurn } from '../types/ai';
+import { AdvisorError, type ChatTurn } from '../types/ai';
 import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
 
-type Message = { id: number; role: 'user' | 'assistant'; content: string; result?: AdvisorReply };
 const errorText = (cause: unknown) => {
   if (cause instanceof AdvisorError) {
     switch (cause.code) {
@@ -26,95 +26,80 @@ const errorText = (cause: unknown) => {
 
 export default function ChatScreen() {
   const router = useRouter();
-  const { width, height } = useWindowDimensions();
   const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [draft, setDraft] = useState('');
-  const [pending, setPending] = useState(false);
-  const [failure, setFailure] = useState<string | null>(null);
-  const [retryText, setRetryText] = useState<string | null>(null);
-  const nextId = useRef(1);
-  const list = useRef<FlatList<Message>>(null);
-  const sending = useRef(false);
+  const { messages, setMessages, draft, setDraft, pending, setPending, failure, setFailure, retryText, setRetryText, nextIdRef, sendingRef } = useChatSession();
+  const list = useRef<FlatList<ChatMessage>>(null);
 
   async function send(text: string, retry = false) {
     const content = text.trim();
-    if (!content || sending.current || !user) return;
+    if (!content || sendingRef.current || !user) return;
     if (text.length > 500) { setFailure('Tin nhắn không được vượt quá 500 ký tự.'); return; }
-    sending.current = true;
+    sendingRef.current = true;
     setPending(true);
     setFailure(null);
     setRetryText(null);
     const previous = retry ? messages.slice(0, -1) : messages;
     const history: ChatTurn[] = previous.slice(-6).map(({ role, content: value }) => ({ role, content: value }));
     if (!retry) {
-      setMessages((current) => [...current, { id: nextId.current++, role: 'user', content }]);
+      setMessages((current) => [...current, { id: nextIdRef.current++, role: 'user', content }]);
       setDraft('');
     }
     try {
       const result = await sendAdvisorMessage(content, history);
-      setMessages((current) => [...current, { id: nextId.current++, role: 'assistant', content: result.reply, result }]);
+      setMessages((current) => [...current, { id: nextIdRef.current++, role: 'assistant', content: result.reply, result }]);
     } catch (cause) {
       setFailure(errorText(cause));
       setRetryText(content);
     } finally {
-      sending.current = false;
+      sendingRef.current = false;
       setPending(false);
     }
   }
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <Pressable style={styles.backdrop} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Đóng trợ lý" />
-        <View style={[styles.panel, { width: Math.min(420, width - uiSpacing.gutter * 2), height: Math.min(600, height * 0.78) }]}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Trợ lý tư vấn khóa học</Text>
-            <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Đóng trợ lý" style={styles.closeButton}>
-              <Ionicons name="close" size={24} color={uiColors.text} />
+      <View style={styles.header}>
+        <Text style={styles.title}>Trợ lý tư vấn khóa học</Text>
+        <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Đóng trợ lý" style={styles.closeButton}>
+          <Ionicons name="close" size={24} color={uiColors.text} />
+        </Pressable>
+      </View>
+      {!user ? <Text style={styles.notice}>Vui lòng đăng nhập để hỏi trợ lý.</Text> : (
+        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <FlatList
+            ref={list}
+            data={messages}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={styles.messages}
+            onContentSizeChange={() => list.current?.scrollToEnd({ animated: true })}
+            ListEmptyComponent={<Text style={styles.welcome}>Bạn muốn học gì? Hãy mô tả mục tiêu của mình để nhận gợi ý khóa học.</Text>}
+            renderItem={({ item }) => (
+              <ChatBubble role={item.role} content={item.content}>
+                {item.result?.courses.map((course) => <View key={course.id} style={styles.course}><CourseCard course={course} variant="horizontal" /></View>)}
+              </ChatBubble>
+            )}
+            ListFooterComponent={<>
+              {pending && <View style={styles.waiting}><ActivityIndicator color={uiColors.primary} /><Text style={styles.waitingText}> Đang soạn câu trả lời...</Text></View>}
+              {failure && <View style={styles.errorBox}><Text style={styles.errorText}>{failure}</Text>
+                {retryText && <Pressable disabled={pending} onPress={() => void send(retryText, true)} style={styles.retryButton}><Text style={styles.retry}>Thử lại</Text></Pressable>}
+              </View>}
+            </>}
+          />
+          <View style={styles.inputRow}>
+            <TextInput value={draft} onChangeText={setDraft} placeholder="Nhập nhu cầu học của bạn..." placeholderTextColor={uiColors.outline} multiline maxLength={500}
+              style={styles.input} editable={!pending} accessibilityLabel="Tin nhắn tư vấn" />
+            <Pressable disabled={pending || !draft.trim()} onPress={() => void send(draft)} style={[styles.send, (pending || !draft.trim()) && styles.disabled]}>
+              <Text style={styles.sendText}>Gửi</Text>
             </Pressable>
           </View>
-          {!user ? <Text style={styles.notice}>Vui lòng đăng nhập để hỏi trợ lý.</Text> : (
-            <View style={styles.flex}>
-              <FlatList
-                ref={list}
-                data={messages}
-                keyExtractor={(item) => String(item.id)}
-                contentContainerStyle={styles.messages}
-                onContentSizeChange={() => list.current?.scrollToEnd({ animated: true })}
-                ListEmptyComponent={<Text style={styles.welcome}>Bạn muốn học gì? Hãy mô tả mục tiêu của mình để nhận gợi ý khóa học.</Text>}
-                renderItem={({ item }) => (
-                  <ChatBubble role={item.role} content={item.content}>
-                    {item.result?.courses.map((course) => <View key={course.id} style={styles.course}><CourseCard course={course} variant="horizontal" /></View>)}
-                  </ChatBubble>
-                )}
-                ListFooterComponent={<>
-                  {pending && <View style={styles.waiting}><ActivityIndicator color={uiColors.primary} /><Text style={styles.waitingText}> Đang soạn câu trả lời...</Text></View>}
-                  {failure && <View style={styles.errorBox}><Text style={styles.errorText}>{failure}</Text>
-                    {retryText && <Pressable disabled={pending} onPress={() => void send(retryText, true)} style={styles.retryButton}><Text style={styles.retry}>Thử lại</Text></Pressable>}
-                  </View>}
-                </>}
-              />
-              <View style={styles.inputRow}>
-                <TextInput value={draft} onChangeText={setDraft} placeholder="Nhập nhu cầu học của bạn..." placeholderTextColor={uiColors.outline} multiline maxLength={500}
-                  style={styles.input} editable={!pending} accessibilityLabel="Tin nhắn tư vấn" />
-                <Pressable disabled={pending || !draft.trim()} onPress={() => void send(draft)} style={[styles.send, (pending || !draft.trim()) && styles.disabled]}>
-                  <Text style={styles.sendText}>Gửi</Text>
-                </Pressable>
-              </View>
-            </View>
-          )}
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 }, flex: { flex: 1 },
-  overlay: { flex: 1, justifyContent: 'flex-end', alignItems: 'center' },
-  backdrop: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(19, 27, 46, 0.42)' },
-  panel: { marginBottom: uiSpacing.gutter, overflow: 'hidden', backgroundColor: uiColors.background, borderRadius: uiRadius.lg, borderWidth: 1, borderColor: uiColors.border, ...uiShadow.large },
+  root: { flex: 1, backgroundColor: uiColors.background }, flex: { flex: 1 },
   header: { minHeight: 56, paddingLeft: uiSpacing.gutter, paddingRight: uiSpacing.sm, backgroundColor: uiColors.background, borderBottomWidth: 1, borderColor: uiColors.border, flexDirection: 'row', alignItems: 'center' },
   closeButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   title: { flex: 1, color: uiColors.text, ...uiType.headlineMedium },

@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { BookmarkProvider } from '../context/BookmarkContext';
 import { CartProvider } from '../context/CartContext';
+import { ChatSessionProvider } from '../context/ChatSessionContext';
 import { Loading } from '../components/ScreenState';
 
 // Auth flow: chưa đăng nhập -> (auth), đã đăng nhập -> (tabs)
@@ -23,9 +24,9 @@ function AuthGate() {
   return (
     <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="chat" options={{ presentation: 'transparentModal', animation: 'fade', contentStyle: { backgroundColor: 'transparent' } }} />
-      </Stack>
+      <ChatSessionProvider key={session?.user.id ?? 'guest'}>
+        <Stack screenOptions={{ headerShown: false }} />
+      </ChatSessionProvider>
       {loading && (
         <View style={StyleSheet.absoluteFill}>
           <Loading />
