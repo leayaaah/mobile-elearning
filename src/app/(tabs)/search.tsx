@@ -182,7 +182,7 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
           </View>
 
           {showDiscovery && !selectedCategoryId && discovery.recommended.length > 0 && (
-            <View style={styles.section}>
+            <View style={styles.recommendedSection}>
               <Text style={[styles.sectionTitle, styles.recommendedTitle]}>Dành cho bạn</Text>
               {discovery.recommended.map((course) => <CourseCard key={course.id} course={course} variant="horizontal" />)}
             </View>
@@ -236,8 +236,9 @@ const styles = StyleSheet.create({
   input: { flex: 1, color: uiColors.text, ...uiType.bodyMedium, paddingVertical: uiSpacing.sm },
   inlineLoading: { padding: uiSpacing.gutter },
   section: { marginTop: uiSpacing.lg, paddingHorizontal: uiSpacing.gutter },
+  recommendedSection: { marginTop: uiSpacing.lg },
   sectionTitle: { color: uiColors.text, ...uiType.headlineSmall },
-  recommendedTitle: { marginBottom: uiSpacing.sm },
+  recommendedTitle: { marginBottom: uiSpacing.sm, paddingHorizontal: uiSpacing.gutter },
   chipWrap: { width: '100%', alignSelf: 'stretch', flexDirection: 'row', flexWrap: 'wrap', gap: uiSpacing.sm, marginTop: uiSpacing.md },
   topicChip: { minHeight: 44, justifyContent: 'center', backgroundColor: uiColors.primarySoft, paddingHorizontal: uiSpacing.md, borderRadius: uiRadius.pill },
   topicText: { color: uiColors.primary, ...uiType.labelMedium },
