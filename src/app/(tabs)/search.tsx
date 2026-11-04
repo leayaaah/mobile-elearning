@@ -3,15 +3,17 @@ import {
   ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CourseCard } from '../../components/CourseCard';
 import { ErrorView, Loading } from '../../components/ScreenState';
 import { useAuth } from '../../context/AuthContext';
+import { useConsent } from '../../context/ConsentContext';
 import { useAsync } from '../../hooks/useAsync';
 import { useDebounce } from '../../hooks/useDebounce';
 import { getCategories, getRecommendedCourses } from '../../services/courseService';
 import { searchCoursesWithAI } from '../../services/semanticSearchService';
+import { getPersonalizedCourses } from '../../services/recommendationService';
 import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Category, Course, SearchResult } from '../../types';
 import { getErrorMessage } from '../../utils/format';
@@ -39,11 +41,22 @@ export default function SearchScreen() {
 
 function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
   const { user } = useAuth();
+  const { status: consentStatus, revision: consentRevision } = useConsent();
   const userId = user?.id;
+  const [personalized, setPersonalized] = useState<Course[] | null>(null);
   const [query, setQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(initialCategoryId);
   const debouncedQuery = useDebounce(query, 400);
   const { data: discovery, loading: discoveryLoading, error: discoveryError, reload: reloadDiscovery } = useAsync(loadDiscovery, []);
+  useFocusEffect(useCallback(() => {
+    void consentRevision;
+    let active = true;
+    setPersonalized(null);
+    void getPersonalizedCourses(userId, 6, consentStatus === 'granted').then((courses) => {
+      if (active) setPersonalized(courses);
+    }).catch(() => { if (active) setPersonalized(null); });
+    return () => { active = false; };
+  }, [userId, consentStatus, consentRevision]));
   const [courses, setCourses] = useState<Course[]>([]);
   const [total, setTotal] = useState(0);
   const [resultSource, setResultSource] = useState<'semantic' | 'keyword'>('keyword');
@@ -181,10 +194,10 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
             </View>
           </View>
 
-          {showDiscovery && !selectedCategoryId && discovery.recommended.length > 0 && (
+          {showDiscovery && !selectedCategoryId && (personalized ?? discovery.recommended).length > 0 && (
             <View style={styles.recommendedSection}>
               <Text style={[styles.sectionTitle, styles.recommendedTitle]}>Dành cho bạn</Text>
-              {discovery.recommended.map((course) => <CourseCard key={course.id} course={course} variant="horizontal" />)}
+              {(personalized ?? discovery.recommended).map((course) => <CourseCard key={course.id} course={course} variant="horizontal" />)}
             </View>
           )}
         </>

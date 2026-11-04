@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View,
 } from 'react-native';
@@ -16,6 +16,7 @@ import { useAsync } from '../../hooks/useAsync';
 import { getCourseById, getCurriculum, getReviews } from '../../services/courseService';
 import { enroll, getCompletedLessonIds, isEnrolled } from '../../services/userService';
 import { trackCourseView } from '../../services/trackingService';
+import { useConsent } from '../../context/ConsentContext';
 import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Course, Review, Section } from '../../types';
 import { formatMinutes, formatPrice, getErrorMessage, timeAgo } from '../../utils/format';
@@ -60,6 +61,8 @@ export default function CourseDetailScreen() {
     : rawEnrollmentRequired === '1';
   const courseId = Number(routeId);
   const { user } = useAuth();
+  const { status: consentStatus } = useConsent();
+  const lastViewKey = useRef<string | null>(null);
   const router = useRouter();
   const { isSaved, toggle } = useBookmarks();
   const cart = useCart();
@@ -79,8 +82,12 @@ export default function CourseDetailScreen() {
 
   const enrolled = Boolean(data?.enrolled || isEnrolledNow);
   useEffect(() => {
-    if (data?.course.id) void trackCourseView(user?.id, data.course.id);
-  }, [data?.course.id, user?.id]);
+    if (!data?.course.id || !user?.id) return;
+    const key = `${user.id}:${data.course.id}`;
+    if (lastViewKey.current === key) return;
+    lastViewKey.current = key;
+    void trackCourseView(user.id, data.course.id, consentStatus === 'granted');
+  }, [data?.course.id, user?.id, consentStatus]);
   const saved = data ? isSaved(data.course.id) : false;
   const alreadyInCart = data ? cart.has(data.course.id) : false;
   const visibleReviews = useMemo(() => {

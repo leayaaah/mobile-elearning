@@ -19,10 +19,10 @@ export async function getSimilarCourses(course: Course, limit = 3): Promise<Cour
   return getCategorySimilar(course, limit);
 }
 
-export async function getPersonalizedCourses(userId: string | undefined, limit = 8): Promise<Course[]> {
+export async function getPersonalizedCourses(userId: string | undefined, limit = 8, consentGranted = false): Promise<Course[]> {
   // Validate userId before proceeding with RPC call
   if (!userId) return getRecommendedCourses(limit);
-  try {
+  if (consentGranted) try {
     const { data, error } = await supabase.rpc('recommend_ai_courses', { p_limit: limit });
     if (error) throw error;
     const ids = ((data ?? []) as RankedId[]).map((row) => row.course_id);

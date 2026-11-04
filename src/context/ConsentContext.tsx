@@ -46,13 +46,18 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (authLoading) return;
-    if (userId) void load(userId);
-    else {
-      generation.current += 1;
-      setSnapshot(empty);
-      setError(null);
-      setRevision(0);
-    }
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      if (userId) void load(userId);
+      else {
+        generation.current += 1;
+        setSnapshot(empty);
+        setError(null);
+        setRevision(0);
+      }
+    });
+    return () => { active = false; generation.current += 1; };
   }, [authLoading, userId, load]);
 
   const reload = useCallback(async () => {
