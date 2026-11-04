@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, fontSize, spacing } from '../theme';
+import { uiColors, uiSpacing, uiType } from '../theme';
 
 // Màn hình tạm: thay bằng UI thật khi code tới
 export function Placeholder({ title, note }: { title: string; note?: string }) {
@@ -12,7 +12,7 @@ export function Placeholder({ title, note }: { title: string; note?: string }) {
 }
 
 const styles = StyleSheet.create({
-  box: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.background },
-  title: { fontSize: fontSize.xl, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
-  note: { fontSize: fontSize.sm, color: colors.textMuted, textAlign: 'center' },
+  box: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: uiSpacing.lg, backgroundColor: uiColors.background },
+  title: { ...uiType.headlineMedium, color: uiColors.text, marginBottom: uiSpacing.sm },
+  note: { ...uiType.bodyMedium, color: uiColors.textMuted, textAlign: 'center' },
 });

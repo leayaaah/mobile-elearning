@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { colors, fontSize, radius, spacing } from '../theme';
+import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
 import { formatMinutes } from '../utils/format';
 import type { MyCourse } from '../types';
 
@@ -29,7 +29,7 @@ function MyCourseCardBase({ course }: Props) {
             <View style={styles.progressRow}>
               <Text style={styles.progressText}>{progress}% tiến độ</Text>
               <Text style={styles.actionText}>{progress >= 100 ? 'Xem lại' : 'Tiếp tục học'}</Text>
-              <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+              <Ionicons name="arrow-forward" size={16} color={uiColors.primary} />
             </View>
           </>
         )}
@@ -41,14 +41,14 @@ function MyCourseCardBase({ course }: Props) {
 export const MyCourseCard = memo(MyCourseCardBase);
 
 const styles = StyleSheet.create({
-  card: { flexDirection: 'row', gap: spacing.md, padding: spacing.md, marginBottom: spacing.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md },
-  thumbnail: { width: 104, height: 104, borderRadius: radius.sm, backgroundColor: colors.border },
+  card: { flexDirection: 'row', gap: uiSpacing.md, padding: uiSpacing.md, marginBottom: uiSpacing.md, backgroundColor: uiColors.surface, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.lg, ...uiShadow.small },
+  thumbnail: { width: 104, height: 104, borderRadius: uiRadius.md, backgroundColor: uiColors.surfaceContainer },
   content: { flex: 1, minWidth: 0, justifyContent: 'center' },
-  title: { color: colors.text, fontSize: fontSize.md, fontWeight: '700' },
-  meta: { color: colors.textMuted, fontSize: fontSize.xs, marginTop: spacing.sm },
-  progressTrack: { height: 7, marginTop: spacing.md, overflow: 'hidden', backgroundColor: colors.border, borderRadius: radius.pill },
-  progressValue: { height: '100%', backgroundColor: colors.primary, borderRadius: radius.pill },
-  progressRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.sm },
-  progressText: { flex: 1, color: colors.textMuted, fontSize: fontSize.xs },
-  actionText: { color: colors.primary, fontSize: fontSize.xs, fontWeight: '700' },
+  title: { color: uiColors.text, ...uiType.bodyLarge, fontWeight: '700' },
+  meta: { color: uiColors.textMuted, ...uiType.bodySmall, marginTop: uiSpacing.sm },
+  progressTrack: { height: 8, marginTop: uiSpacing.md, overflow: 'hidden', backgroundColor: uiColors.primarySoft, borderRadius: uiRadius.pill },
+  progressValue: { height: '100%', backgroundColor: uiColors.primary, borderRadius: uiRadius.pill },
+  progressRow: { flexDirection: 'row', alignItems: 'center', gap: uiSpacing.xs, marginTop: uiSpacing.sm },
+  progressText: { flex: 1, color: uiColors.textMuted, ...uiType.bodySmall },
+  actionText: { color: uiColors.primary, ...uiType.labelMedium },
 });
