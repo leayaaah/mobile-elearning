@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { ConsentProvider } from '../context/ConsentContext';
 import { BookmarkProvider } from '../context/BookmarkContext';
 import { CartProvider } from '../context/CartContext';
 import { ChatSessionProvider } from '../context/ChatSessionContext';
@@ -39,11 +40,13 @@ function AuthGate() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <BookmarkProvider>
-        <CartProvider>
-          <AuthGate />
-        </CartProvider>
-      </BookmarkProvider>
+      <ConsentProvider>
+        <BookmarkProvider>
+          <CartProvider>
+            <AuthGate />
+          </CartProvider>
+        </BookmarkProvider>
+      </ConsentProvider>
     </AuthProvider>
   );
 }
