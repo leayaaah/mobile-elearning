@@ -4,5 +4,5 @@ export async function changePassword(email: string, currentPassword: string, nex
   const { error: verifyError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
   if (verifyError) throw new Error('Mật khẩu hiện tại không đúng hoặc không thể xác thực.');
   const { error } = await supabase.auth.updateUser({ password: nextPassword });
-  if (error) throw error;
+  if (error) throw new Error('Không thể đổi mật khẩu. Vui lòng thử lại.');
 }

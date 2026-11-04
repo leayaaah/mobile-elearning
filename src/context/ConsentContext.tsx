@@ -17,7 +17,7 @@ type ConsentContextValue = {
 
 const ConsentContext = createContext<ConsentContextValue | null>(null);
 const empty: Snapshot = { userId: null, status: 'unset', updatedAt: null };
-const message = (error: unknown) => error instanceof Error ? error.message : 'Vui lòng thử lại.';
+const message = () => 'Vui lòng kiểm tra kết nối và thử lại.';
 
 export function ConsentProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
@@ -28,6 +28,7 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
   const [revision, setRevision] = useState(0);
   const generation = useRef(0);
   const busyRef = useRef(false);
+  const operationId = useRef(0);
 
   const load = useCallback(async (id: string) => {
     const current = ++generation.current;
@@ -36,10 +37,10 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
     try {
       const value = await getMyConsent();
       if (generation.current === current) setSnapshot({ userId: id, ...value });
-    } catch (cause) {
+    } catch {
       if (generation.current === current) {
         setSnapshot({ userId: id, status: 'unset', updatedAt: null });
-        setError(`Không thể tải quyền riêng tư: ${message(cause)}`);
+        setError(`Không thể tải quyền riêng tư: ${message()}`);
       }
     }
   }, []);
@@ -49,6 +50,9 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
     let active = true;
     void Promise.resolve().then(() => {
       if (!active) return;
+      operationId.current += 1;
+      busyRef.current = false;
+      setBusy(false);
       if (userId) void load(userId);
       else {
         generation.current += 1;
@@ -65,8 +69,10 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
   }, [userId, load]);
 
   const mutate = useCallback(async (operation: () => Promise<TrackingConsent | void>) => {
-    if (!userId || busyRef.current) return;
+    if (!userId) throw new Error('Vui lòng đăng nhập.');
+    if (busyRef.current) throw new Error('Vui lòng đợi thao tác hiện tại hoàn tất.');
     busyRef.current = true;
+    const currentOperation = ++operationId.current;
     setBusy(true);
     setError(null);
     const current = generation.current;
@@ -77,11 +83,13 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
         setRevision((value) => value + 1);
       }
     } catch (cause) {
-      if (generation.current === current) setError(`Thao tác quyền riêng tư thất bại: ${message(cause)}`);
+      if (generation.current === current) setError(`Thao tác quyền riêng tư thất bại: ${message()}`);
       throw cause;
     } finally {
-      busyRef.current = false;
-      setBusy(false);
+      if (operationId.current === currentOperation) {
+        busyRef.current = false;
+        setBusy(false);
+      }
     }
   }, [userId]);
 
