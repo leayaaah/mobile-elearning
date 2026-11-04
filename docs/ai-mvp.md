@@ -19,10 +19,16 @@ trả 3 ứng viên semantic dưới dạng fallback. Khi embedding lỗi, trả
 Chưa có streaming, tracking nguồn chatbot, bộ đo thật hay kiểm thử trên thiết bị.
 Bộ câu thử: [`ai-chatbot-test-cases.md`](ai-chatbot-test-cases.md).
 
-Các thay đổi trong repo **chưa được triển khai lên Supabase**. Migration nằm ở
+Trạng thái triển khai Supabase cần kiểm tra theo từng môi trường. Migration nằm ở
 [`supabase/proposals/20261103_ai_mvp.sql`](../supabase/proposals/20261103_ai_mvp.sql), không nằm
 trong thư mục migration tự chạy. Kiểm tra schema thực tế và sao lưu dữ liệu trước khi áp dụng.
 Không chạy lại `supabase/schema.sql` trên database đã có dữ liệu.
+
+Nếu đã áp dụng proposal AI MVP trước bản sửa ngày 05/11, chạy riêng
+[`20261105_fix_recommend_ai_courses_ambiguity.sql`](../supabase/proposals/20261105_fix_recommend_ai_courses_ambiguity.sql)
+trên database đó. RPC cũ có `course_id` không kèm tên bảng nên PostgreSQL báo
+`42702` và ứng dụng rơi về gợi ý phổ biến. Proposal AI MVP hiện đã sửa nguồn này
+cho lần áp dụng mới; không chạy lại toàn bộ proposal trên database đã có AI MVP.
 
 ## Quyết định kỹ thuật
 
