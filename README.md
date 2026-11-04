@@ -1,5 +1,10 @@
 # E-Learning App – bộ khung khởi đầu (Expo Router + TypeScript + Supabase)
 
+> Giai đoạn 2 AI: xem [hướng dẫn MVP và kiểm thử](docs/ai-mvp.md). SQL AI hiện chỉ là
+> [bản đề xuất để review](supabase/proposals/20261103_ai_mvp.sql), chưa áp dụng lên database.
+> Chatbot tư vấn khóa học có [SQL proposal riêng](supabase/proposals/20261105_ai_chatbot.sql)
+> và [bộ câu hỏi thử](docs/ai-chatbot-test-cases.md); triển khai sau AI MVP.
+
 Gói này gồm **schema + dữ liệu mẫu Supabase** và **code nền** (đăng nhập, context, service, cache, Trang chủ và các màn hình Bước 6 đã triển khai).
 
 ## 1. Tạo project Expo và ghép code

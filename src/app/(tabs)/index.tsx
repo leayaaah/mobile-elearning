@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -11,6 +11,7 @@ import {
   getCategories, getInspiringCourses, getPopularCourses, getRecommendedCourses, getTopTeachers,
 } from '../../services/courseService';
 import { clearCache } from '../../lib/cache';
+import { getPersonalizedCourses } from '../../services/recommendationService';
 import { CourseCard } from '../../components/CourseCard';
 import { SectionHeader } from '../../components/SectionHeader';
 import { ErrorView, Loading } from '../../components/ScreenState';
@@ -37,9 +38,21 @@ const keyOf = (c: Course) => String(c.id);
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const userId = user?.id;
   const { items: cartItems } = useCart();
   const { data, loading, error, reload } = useAsync(loadHome, []);
   const [refreshing, setRefreshing] = useState(false);
+  const [personalized, setPersonalized] = useState<Course[] | null>(null);
+
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    void getPersonalizedCourses(userId).then((courses) => {
+      if (active) setPersonalized(courses);
+    }).catch((cause: unknown) => {
+      if (__DEV__) console.warn('Không thể tải gợi ý cá nhân.', cause);
+    });
+    return () => { active = false; };
+  }, [userId]));
 
   const name = (user?.user_metadata?.full_name as string | undefined) || 'bạn';
 
@@ -49,10 +62,18 @@ export default function HomeScreen() {
     try {
       await clearCache();
       reload();
+      // Safe handling: only call getPersonalizedCourses if userId is valid
+      if (userId) {
+        setPersonalized(await getPersonalizedCourses(userId));
+      } else {
+        setPersonalized(null);
+      }
+    } catch (cause) {
+      if (__DEV__) console.warn('Không thể làm mới gợi ý.', cause);
     } finally {
       setRefreshing(false);
     }
-  }, [reload]);
+  }, [reload, userId]);
 
   if (loading && !data) return <Loading />;
   if (error && !data) return <ErrorView message={error} onRetry={reload} />;
@@ -79,6 +100,13 @@ export default function HomeScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         contentContainerStyle={{ paddingBottom: spacing.xxl }}
       >
+        {user && (
+          <Pressable style={styles.chatEntry} onPress={() => router.push('/chat')}>
+            <Ionicons name="chatbubble-ellipses-outline" size={22} color={colors.primary} />
+            <Text style={styles.chatEntryText}>Hỏi trợ lý AI để tìm khóa học phù hợp</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+          </Pressable>
+        )}
         {/* Banner khuyến mãi */}
         <View style={styles.banner}>
           <View style={{ flex: 1 }}>
@@ -107,7 +135,7 @@ export default function HomeScreen() {
         <HorizontalCourses courses={data.popular} />
 
         <SectionHeader title="Dành cho bạn" onViewMore={() => router.push('/(tabs)/search')} />
-        <HorizontalCourses courses={data.recommended} />
+        <HorizontalCourses courses={personalized ?? data.recommended} />
 
         <SectionHeader title="Khóa học truyền cảm hứng" />
         {data.inspiring.map((c) => (
@@ -158,6 +186,8 @@ const styles = StyleSheet.create({
   dot: { position: 'absolute', top: -2, right: -4, backgroundColor: colors.danger, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
   dotText: { color: '#fff', fontSize: 10, fontWeight: '700' },
   banner: { marginHorizontal: spacing.lg, marginTop: spacing.lg, borderRadius: radius.md, backgroundColor: colors.purple, padding: spacing.xl, flexDirection: 'row' },
+  chatEntry: { marginHorizontal: spacing.lg, marginTop: spacing.lg, padding: spacing.lg, borderRadius: radius.md, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  chatEntryText: { flex: 1, color: colors.text, fontSize: fontSize.md, fontWeight: '600' },
   bannerLabel: { color: '#fff', fontSize: fontSize.xs, opacity: 0.9 },
   bannerTitle: { color: '#fff', fontSize: fontSize.xxl, fontWeight: '800', marginVertical: spacing.sm },
   bannerBtn: { alignSelf: 'flex-start', backgroundColor: colors.primary, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radius.sm },

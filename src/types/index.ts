@@ -117,4 +117,5 @@ export type SearchParams = {
 export type SearchResult = {
   items: Course[];
   total: number;
+  source?: 'semantic' | 'keyword';
 };

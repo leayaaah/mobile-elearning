@@ -3,5 +3,6 @@
   "compilerOptions": {
     "strict": true,
     "ignoreDeprecations": "6.0"
-  }
+  },
+  "exclude": ["supabase/functions"]
 }
