@@ -39,9 +39,12 @@ export default function MyCoursesScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <View style={styles.header}><Text style={styles.heading}>Khóa học của tôi</Text></View>
+      <View style={styles.header}>
+        <Text style={styles.heading}>Khóa học của tôi</Text>
+        <View style={styles.headingAccent} />
+      </View>
       <View style={styles.tabs}>{FILTERS.map((item) => (
-        <Pressable key={item.key} style={[styles.tab, filter === item.key && styles.tabActive]} onPress={() => setFilter(item.key)}>
+        <Pressable key={item.key} accessibilityRole="tab" accessibilityState={{ selected: filter === item.key }} style={[styles.tab, filter === item.key && styles.tabActive]} onPress={() => setFilter(item.key)}>
           <Text style={[styles.tabText, filter === item.key && styles.tabTextActive]}>{item.label}</Text>
         </Pressable>
       ))}</View>
@@ -61,15 +64,16 @@ export default function MyCoursesScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: uiColors.background },
-  header: { paddingHorizontal: uiSpacing.gutter, paddingTop: uiSpacing.md, paddingBottom: uiSpacing.sm },
+  header: { paddingHorizontal: uiSpacing.gutter, paddingTop: uiSpacing.md, paddingBottom: uiSpacing.md },
   heading: { color: uiColors.text, ...uiType.headlineLarge },
-  tabs: { flexDirection: 'row', marginHorizontal: uiSpacing.gutter, marginBottom: uiSpacing.md, padding: uiSpacing.xs, backgroundColor: uiColors.surface, borderRadius: uiRadius.md, ...uiShadow.small },
+  headingAccent: { width: uiSpacing.xl, height: uiSpacing.xs, borderRadius: uiRadius.pill, backgroundColor: uiColors.primary, marginTop: uiSpacing.sm },
+  tabs: { flexDirection: 'row', marginHorizontal: uiSpacing.gutter, marginBottom: uiSpacing.md, padding: uiSpacing.xs, backgroundColor: uiColors.surfaceLow, borderRadius: uiRadius.md, borderWidth: 1, borderColor: uiColors.border },
   tab: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.sm },
-  tabActive: { backgroundColor: uiColors.primarySoft },
+  tabActive: { backgroundColor: uiColors.surface, ...uiShadow.small },
   tabText: { color: uiColors.textMuted, ...uiType.labelMedium },
   tabTextActive: { color: uiColors.primary },
-  list: { flexGrow: 1, paddingHorizontal: uiSpacing.gutter, paddingBottom: uiSpacing.xl },
-  empty: { alignItems: 'center', padding: uiSpacing.xl, marginTop: uiSpacing.xl },
+  list: { flexGrow: 1, paddingHorizontal: uiSpacing.gutter, paddingTop: uiSpacing.xs, paddingBottom: uiSpacing.xl },
+  empty: { alignItems: 'center', padding: uiSpacing.xl, marginTop: uiSpacing.xl, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, ...uiShadow.small },
   emptyTitle: { color: uiColors.text, ...uiType.headlineSmall, textAlign: 'center' },
   emptyText: { color: uiColors.textMuted, ...uiType.bodyMedium, textAlign: 'center', marginTop: uiSpacing.sm },
   refreshError: { color: uiColors.danger, ...uiType.bodySmall, textAlign: 'center', padding: uiSpacing.sm },
