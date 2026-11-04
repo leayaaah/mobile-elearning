@@ -3,7 +3,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleShee
 import { Link } from 'expo-router';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
-import { colors, fontSize, radius, spacing } from '../../theme';
+import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import { getErrorMessage } from '../../utils/format';
 
 export default function LoginScreen() {
@@ -40,6 +40,7 @@ export default function LoginScreen() {
         <TextInput
           style={styles.input}
           placeholder="Email"
+          placeholderTextColor={uiColors.outline}
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
@@ -48,14 +49,15 @@ export default function LoginScreen() {
         <TextInput
           style={styles.input}
           placeholder="Mật khẩu"
+          placeholderTextColor={uiColors.outline}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
         />
         {error && <Text style={styles.error}>{error}</Text>}
 
-        <Pressable style={[styles.button, submitting && { opacity: 0.6 }]} onPress={onSubmit} disabled={submitting}>
-          {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Đăng nhập</Text>}
+        <Pressable style={[styles.button, submitting && styles.disabledButton]} onPress={onSubmit} disabled={submitting}>
+          {submitting ? <ActivityIndicator color={uiColors.onPrimary} /> : <Text style={styles.buttonText}>Đăng nhập</Text>}
         </Pressable>
 
         <View style={styles.footer}>
@@ -69,15 +71,16 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.surface },
-  container: { flex: 1, justifyContent: 'center', padding: spacing.xl },
-  title: { fontSize: fontSize.xxl, fontWeight: '700', color: colors.text },
-  subtitle: { fontSize: fontSize.md, color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.xl },
-  input: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.background, borderRadius: radius.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, fontSize: fontSize.md, marginBottom: spacing.md },
-  error: { color: colors.danger, fontSize: fontSize.sm, marginBottom: spacing.md },
-  button: { backgroundColor: colors.primary, borderRadius: radius.md, paddingVertical: spacing.lg, alignItems: 'center', marginTop: spacing.sm },
-  buttonText: { color: '#fff', fontSize: fontSize.md, fontWeight: '600' },
-  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.xl },
-  footerText: { color: colors.textMuted },
-  link: { color: colors.primary, fontWeight: '600' },
+  safe: { flex: 1, backgroundColor: uiColors.background },
+  container: { flex: 1, justifyContent: 'center', padding: uiSpacing.gutter },
+  title: { ...uiType.displayMobile, color: uiColors.text },
+  subtitle: { ...uiType.bodyLarge, color: uiColors.textMuted, marginTop: uiSpacing.xs, marginBottom: uiSpacing.lg },
+  input: { minHeight: 48, borderWidth: 1, borderColor: uiColors.border, backgroundColor: uiColors.surface, borderRadius: uiRadius.md, paddingHorizontal: uiSpacing.md, paddingVertical: uiSpacing.sm, ...uiType.bodyMedium, color: uiColors.text, marginBottom: uiSpacing.md, ...uiShadow.small },
+  error: { ...uiType.bodySmall, color: uiColors.danger, marginBottom: uiSpacing.md },
+  button: { minHeight: 48, backgroundColor: uiColors.primary, borderRadius: uiRadius.md, alignItems: 'center', justifyContent: 'center', marginTop: uiSpacing.sm },
+  disabledButton: { opacity: 0.6 },
+  buttonText: { ...uiType.labelLarge, color: uiColors.onPrimary },
+  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: uiSpacing.lg },
+  footerText: { ...uiType.bodyMedium, color: uiColors.textMuted },
+  link: { ...uiType.labelLarge, color: uiColors.primary },
 });
