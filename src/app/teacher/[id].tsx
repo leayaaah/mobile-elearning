@@ -7,7 +7,7 @@ import { getTeacher, getTeacherCourses } from '../../services/courseService';
 import { ErrorView, Loading } from '../../components/ScreenState';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { CourseCard } from '../../components/CourseCard';
-import { colors, fontSize, spacing } from '../../theme';
+import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 
 export default function TeacherScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -52,23 +52,23 @@ export default function TeacherScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  list: { paddingBottom: spacing.lg },
-  profile: { padding: spacing.lg },
-  identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  screen: { flex: 1, backgroundColor: uiColors.background },
+  list: { paddingBottom: uiSpacing.xl },
+  profile: { padding: uiSpacing.gutter },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: uiSpacing.md },
   identityText: { flex: 1 },
-  avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.border },
-  avatarFallback: { width: 72, height: 72, alignItems: 'center', justifyContent: 'center', borderRadius: 36, backgroundColor: colors.primarySoft },
-  initials: { color: colors.primary, fontSize: fontSize.xxl, fontWeight: '800' },
-  name: { color: colors.text, fontSize: fontSize.xl, fontWeight: '800' },
-  headline: { color: colors.textMuted, fontSize: fontSize.sm, marginTop: spacing.xs },
-  followers: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.xs, marginTop: spacing.lg },
-  followersNumber: { color: colors.text, fontSize: fontSize.lg, fontWeight: '800' },
-  followersLabel: { color: colors.textMuted, fontSize: fontSize.sm },
-  detail: { color: colors.textMuted, fontSize: fontSize.sm, marginTop: spacing.md },
-  bio: { color: colors.text, fontSize: fontSize.sm, lineHeight: 21, marginTop: spacing.md },
-  sectionTitle: { color: colors.text, fontSize: fontSize.lg, fontWeight: '800', marginTop: spacing.xl },
-  empty: { alignItems: 'center', padding: spacing.xxl },
-  emptyTitle: { color: colors.text, fontSize: fontSize.lg, fontWeight: '700' },
-  emptyText: { color: colors.textMuted, fontSize: fontSize.sm, textAlign: 'center', marginTop: spacing.sm },
+  avatar: { width: 72, height: 72, borderRadius: uiRadius.pill, backgroundColor: uiColors.surfaceContainer },
+  avatarFallback: { width: 72, height: 72, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.pill, backgroundColor: uiColors.primarySoft },
+  initials: { color: uiColors.primary, ...uiType.headlineLarge, fontWeight: '800' },
+  name: { color: uiColors.text, ...uiType.headlineMedium, fontWeight: '800' },
+  headline: { color: uiColors.textMuted, ...uiType.bodyMedium, marginTop: uiSpacing.xs },
+  followers: { flexDirection: 'row', alignItems: 'baseline', gap: uiSpacing.xs, marginTop: uiSpacing.lg, padding: uiSpacing.md, borderRadius: uiRadius.lg, backgroundColor: uiColors.surface, ...uiShadow.small },
+  followersNumber: { color: uiColors.primary, ...uiType.headlineSmall, fontWeight: '800' },
+  followersLabel: { color: uiColors.textMuted, ...uiType.bodySmall },
+  detail: { color: uiColors.textMuted, ...uiType.bodyMedium, marginTop: uiSpacing.md },
+  bio: { color: uiColors.text, ...uiType.bodyMedium, marginTop: uiSpacing.md },
+  sectionTitle: { color: uiColors.text, ...uiType.headlineSmall, marginTop: uiSpacing.lg },
+  empty: { alignItems: 'center', padding: uiSpacing.xl },
+  emptyTitle: { color: uiColors.text, ...uiType.headlineSmall },
+  emptyText: { color: uiColors.textMuted, ...uiType.bodyMedium, textAlign: 'center', marginTop: uiSpacing.sm },
 });
