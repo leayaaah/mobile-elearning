@@ -100,24 +100,6 @@ export default function HomeScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={uiColors.primary} />}
         contentContainerStyle={styles.scrollContent}
       >
-        {user && (
-          <Pressable style={styles.chatEntry} onPress={() => router.push('/chat')}>
-            <Ionicons name="chatbubble-ellipses-outline" size={22} color={uiColors.primary} />
-            <Text style={styles.chatEntryText}>Hỏi trợ lý AI để tìm khóa học phù hợp</Text>
-            <Ionicons name="chevron-forward" size={18} color={uiColors.primary} />
-          </Pressable>
-        )}
-        {/* Banner khuyến mãi */}
-        <View style={styles.banner}>
-          <View style={styles.bannerContent}>
-            <Text style={styles.bannerLabel}>QUẢN LÝ DỰ ÁN</Text>
-            <Text style={styles.bannerTitle}>Giảm 20%</Text>
-            <Pressable style={styles.bannerBtn} onPress={() => router.push('/(tabs)/search')}>
-              <Text style={styles.bannerBtnText}>Tham gia ngay</Text>
-            </Pressable>
-          </View>
-        </View>
-
         {/* Danh mục */}
         <SectionHeader title="Danh mục" onViewMore={() => router.push('/(tabs)/search')} />
         <View style={styles.catGrid}>
@@ -158,6 +140,12 @@ export default function HomeScreen() {
           )}
         />
       </ScrollView>
+      {user && (
+        <Pressable style={styles.chatFloat} onPress={() => router.push('/chat')} accessibilityRole="button" accessibilityLabel="Hỏi trợ lý AI để tìm khóa học phù hợp">
+          <Ionicons name="chatbubble-ellipses-outline" size={22} color={uiColors.onPrimary} />
+          <Text style={styles.chatFloatText}>Trợ lý AI</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -186,15 +174,9 @@ const styles = StyleSheet.create({
   iconBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.md },
   dot: { position: 'absolute', top: 0, right: 0, backgroundColor: uiColors.danger, minWidth: 16, height: 16, borderRadius: uiRadius.pill, alignItems: 'center', justifyContent: 'center', paddingHorizontal: uiSpacing.xs },
   dotText: { color: uiColors.onDanger, ...uiType.labelSmall },
-  scrollContent: { paddingBottom: uiSpacing.xl },
-  banner: { marginHorizontal: uiSpacing.gutter, marginTop: uiSpacing.md, borderRadius: uiRadius.lg, backgroundColor: uiColors.primaryContainer, padding: uiSpacing.gutter, flexDirection: 'row', ...uiShadow.large },
-  bannerContent: { flex: 1 },
-  chatEntry: { minHeight: 56, marginHorizontal: uiSpacing.gutter, marginTop: uiSpacing.md, padding: uiSpacing.md, borderRadius: uiRadius.lg, backgroundColor: uiColors.surface, flexDirection: 'row', alignItems: 'center', gap: uiSpacing.sm, borderWidth: 1, borderColor: uiColors.border, ...uiShadow.small },
-  chatEntryText: { flex: 1, color: uiColors.text, ...uiType.labelLarge },
-  bannerLabel: { color: uiColors.primarySoft, ...uiType.labelMedium },
-  bannerTitle: { color: uiColors.onPrimary, ...uiType.headlineLarge, fontWeight: '800', marginVertical: uiSpacing.sm },
-  bannerBtn: { minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start', backgroundColor: uiColors.surface, paddingHorizontal: uiSpacing.gutter, borderRadius: uiRadius.md },
-  bannerBtnText: { color: uiColors.primary, ...uiType.labelLarge },
+  scrollContent: { paddingTop: uiSpacing.md, paddingBottom: uiSpacing.xl * 3 },
+  chatFloat: { position: 'absolute', right: uiSpacing.gutter, bottom: uiSpacing.gutter, minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: uiSpacing.sm, paddingHorizontal: uiSpacing.md, borderRadius: uiRadius.pill, backgroundColor: uiColors.primary, ...uiShadow.large },
+  chatFloatText: { color: uiColors.onPrimary, ...uiType.labelLarge },
   catGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: uiSpacing.gutter, gap: uiSpacing.md },
   catItem: { width: '47%', minHeight: 68, flexDirection: 'row', alignItems: 'center', gap: uiSpacing.sm, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, borderWidth: 1, borderColor: uiColors.border, padding: uiSpacing.sm, ...uiShadow.small },
   catIcon: { width: 44, height: 44, borderRadius: uiRadius.md, alignItems: 'center', justifyContent: 'center' },
