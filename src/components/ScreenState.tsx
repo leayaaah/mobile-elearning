@@ -1,10 +1,10 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, fontSize, radius, spacing } from '../theme';
+import { uiColors, uiRadius, uiSpacing, uiType } from '../theme';
 
 export function Loading() {
   return (
     <View style={styles.center}>
-      <ActivityIndicator size="large" color={colors.primary} />
+      <ActivityIndicator size="large" color={uiColors.primary} />
     </View>
   );
 }
@@ -23,8 +23,8 @@ export function ErrorView({ message, onRetry }: { message: string; onRetry?: () 
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
-  errorText: { color: colors.textMuted, fontSize: fontSize.md, textAlign: 'center', marginBottom: spacing.md },
-  btn: { backgroundColor: colors.primary, paddingHorizontal: spacing.xl, paddingVertical: spacing.md, borderRadius: radius.md },
-  btnText: { color: '#fff', fontWeight: '600' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: uiSpacing.lg, backgroundColor: uiColors.background },
+  errorText: { color: uiColors.textMuted, ...uiType.bodyLarge, textAlign: 'center', marginBottom: uiSpacing.md },
+  btn: { minHeight: 44, justifyContent: 'center', backgroundColor: uiColors.primary, paddingHorizontal: uiSpacing.lg, borderRadius: uiRadius.md },
+  btnText: { color: uiColors.onPrimary, ...uiType.labelLarge },
 });

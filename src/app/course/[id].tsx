@@ -16,7 +16,7 @@ import { useAsync } from '../../hooks/useAsync';
 import { getCourseById, getCurriculum, getReviews } from '../../services/courseService';
 import { enroll, getCompletedLessonIds, isEnrolled } from '../../services/userService';
 import { trackCourseView } from '../../services/trackingService';
-import { colors, fontSize, radius, spacing } from '../../theme';
+import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Course, Review, Section } from '../../types';
 import { formatMinutes, formatPrice, getErrorMessage, timeAgo } from '../../utils/format';
 
@@ -206,9 +206,9 @@ export default function CourseDetailScreen() {
               onPress={() => void addCourseToCart()}
               style={[styles.cartButton, (enrolled || alreadyInCart || action !== null || cart.loading) && styles.disabledButton]}
             >
-              {action === 'cart' ? <ActivityIndicator color="#fff" /> : (
+              {action === 'cart' ? <ActivityIndicator color={uiColors.onPrimary} /> : (
                 <>
-                  <Ionicons name={enrolled ? 'checkmark-circle-outline' : alreadyInCart ? 'cart' : 'cart-outline'} size={18} color="#fff" />
+                  <Ionicons name={enrolled ? 'checkmark-circle-outline' : alreadyInCart ? 'cart' : 'cart-outline'} size={18} color={uiColors.onPrimary} />
                   <Text style={styles.cartButtonText}>
                     {enrolled ? 'Đã ghi danh' : alreadyInCart ? 'Đã có trong giỏ' : 'Thêm vào giỏ'}
                   </Text>
@@ -250,14 +250,14 @@ function OverviewTab({
           onPress={onToggleBookmark}
           style={styles.bookmarkButton}
         >
-          <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={22} color={saved ? colors.primary : colors.text} />
+          <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={22} color={saved ? uiColors.primary : uiColors.text} />
         </Pressable>
       </View>
 
       <View style={styles.overviewBody}>
         <Text style={styles.courseTitle}>{course.title}</Text>
         <View style={styles.courseMeta}>
-          <Ionicons name="star" size={16} color={colors.star} />
+          <Ionicons name="star" size={16} color={uiColors.secondary} />
           <Text style={styles.ratingText}>{course.rating.toFixed(1)} ({course.rating_count} đánh giá)</Text>
           <Text style={styles.metaSeparator}>·</Text>
           <Text style={styles.metaText}>{course.lessons_count} bài học</Text>
@@ -272,7 +272,7 @@ function OverviewTab({
               <Text style={styles.teacherName}>{course.teacher.full_name}</Text>
               {course.teacher.headline && <Text style={styles.teacherHeadline}>{course.teacher.headline}</Text>}
             </View>
-            {onOpenTeacher && <Feather name="chevron-right" size={20} color={colors.textMuted} />}
+            {onOpenTeacher && <Feather name="chevron-right" size={20} color={uiColors.textMuted} />}
           </Pressable>
         )}
 
@@ -281,14 +281,14 @@ function OverviewTab({
 
         {enrolled ? (
           <Pressable accessibilityRole="button" onPress={onStartLearning} style={styles.learningButton}>
-            <Ionicons name="play-circle-outline" size={20} color="#fff" />
+            <Ionicons name="play-circle-outline" size={20} color={uiColors.onPrimary} />
             <Text style={styles.learningButtonText}>
               {completedLessonCount > 0 ? 'Tiếp tục học' : 'Bắt đầu học'}
             </Text>
           </Pressable>
         ) : (
           <Pressable onPress={onEnroll} disabled={enrolling} style={[styles.enrollButton, enrolling && styles.disabledButton]}>
-            {enrolling ? <ActivityIndicator color="#fff" /> : (
+            {enrolling ? <ActivityIndicator color={uiColors.onPrimary} /> : (
               <Text style={styles.enrollButtonText}>Ghi danh miễn phí</Text>
             )}
           </Pressable>
@@ -325,11 +325,11 @@ function LessonsTab({ sections, expanded, onToggle }: {
                 <Text style={styles.chapterTitle}>{section.title}</Text>
                 <Text style={styles.chapterMeta}>{section.lessons.length} bài học</Text>
               </View>
-              <Feather name={isOpen ? 'chevron-up' : 'chevron-down'} size={20} color={colors.textMuted} />
+              <Feather name={isOpen ? 'chevron-up' : 'chevron-down'} size={20} color={uiColors.textMuted} />
             </Pressable>
             {isOpen && section.lessons.map((lesson) => (
               <View key={lesson.id} style={styles.lessonRow}>
-                <Ionicons name={lesson.is_preview ? 'play-circle-outline' : 'document-text-outline'} size={18} color={colors.primary} />
+                <Ionicons name={lesson.is_preview ? 'play-circle-outline' : 'document-text-outline'} size={18} color={uiColors.primary} />
                 <Text style={styles.lessonTitle}>{lesson.title}</Text>
                 <Text style={styles.lessonDuration}>{formatMinutes(Math.ceil(lesson.duration_seconds / 60))}</Text>
               </View>
@@ -402,7 +402,7 @@ function Stars({ rating, size }: { rating: number; size: number }) {
   return (
     <View style={styles.stars}>
       {[1, 2, 3, 4, 5].map((star) => (
-        <Ionicons key={star} name={star <= Math.round(rating) ? 'star' : 'star-outline'} size={size} color={colors.star} />
+        <Ionicons key={star} name={star <= Math.round(rating) ? 'star' : 'star-outline'} size={size} color={uiColors.secondary} />
       ))}
     </View>
   );
@@ -411,7 +411,7 @@ function Stars({ rating, size }: { rating: number; size: number }) {
 function EmptyTab({ message }: { message: string }) {
   return (
     <View style={styles.emptyTab}>
-      <Feather name="book-open" size={27} color={colors.textMuted} />
+      <Feather name="book-open" size={27} color={uiColors.textMuted} />
       <Text style={styles.emptyTabText}>{message}</Text>
     </View>
   );
@@ -422,77 +422,77 @@ function averageRating(reviews: Review[]) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  tabBar: { flexDirection: 'row', backgroundColor: colors.surface, paddingHorizontal: spacing.lg, borderBottomWidth: 1, borderBottomColor: colors.border },
-  tabButton: { flex: 1, alignItems: 'center', paddingVertical: spacing.md, borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabButtonActive: { borderBottomColor: colors.primary },
-  tabText: { color: colors.textMuted, fontSize: fontSize.sm, fontWeight: '600' },
-  tabTextActive: { color: colors.primary },
-  scrollContent: { paddingBottom: spacing.xl },
-  heroWrap: { position: 'relative', marginHorizontal: spacing.lg, marginTop: spacing.lg, borderRadius: radius.md, overflow: 'hidden' },
-  hero: { width: '100%', height: 210, backgroundColor: colors.border },
-  courseBadge: { position: 'absolute', top: spacing.md, left: spacing.md, backgroundColor: colors.purple, borderRadius: radius.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
-  courseBadgeText: { color: '#fff', fontWeight: '700', fontSize: fontSize.xs },
-  bookmarkButton: { position: 'absolute', top: spacing.md, right: spacing.md, width: 40, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
-  overviewBody: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
-  courseTitle: { color: colors.text, fontSize: fontSize.xl, fontWeight: '800', lineHeight: 28 },
-  courseMeta: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.md },
-  ratingText: { color: colors.text, fontSize: fontSize.sm, fontWeight: '700' },
-  metaSeparator: { color: colors.textMuted, marginHorizontal: 2 },
-  metaText: { color: colors.textMuted, fontSize: fontSize.sm },
-  teacherCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, marginTop: spacing.lg, borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.border },
-  teacherAvatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.border },
+  root: { flex: 1, backgroundColor: uiColors.background },
+  tabBar: { flexDirection: 'row', backgroundColor: uiColors.surface, paddingHorizontal: uiSpacing.gutter, borderBottomWidth: 1, borderBottomColor: uiColors.border },
+  tabButton: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', paddingVertical: uiSpacing.sm, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  tabButtonActive: { borderBottomColor: uiColors.primary },
+  tabText: { color: uiColors.textMuted, fontSize: uiType.bodySmall.fontSize, fontWeight: '600' },
+  tabTextActive: { color: uiColors.primary },
+  scrollContent: { paddingBottom: uiSpacing.lg },
+  heroWrap: { position: 'relative', marginHorizontal: uiSpacing.gutter, marginTop: uiSpacing.gutter, borderRadius: uiRadius.lg, overflow: 'hidden', ...uiShadow.medium },
+  hero: { width: '100%', height: 210, backgroundColor: uiColors.border },
+  courseBadge: { position: 'absolute', top: uiSpacing.md, left: uiSpacing.md, backgroundColor: uiColors.primaryContainer, borderRadius: uiRadius.md, paddingHorizontal: uiSpacing.md, paddingVertical: uiSpacing.xs },
+  courseBadgeText: { color: uiColors.onPrimary, fontWeight: '700', fontSize: uiType.labelSmall.fontSize },
+  bookmarkButton: { position: 'absolute', top: uiSpacing.md, right: uiSpacing.md, width: 44, height: 44, borderRadius: uiRadius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: uiColors.surface, ...uiShadow.small },
+  overviewBody: { paddingHorizontal: uiSpacing.gutter, paddingTop: uiSpacing.gutter },
+  courseTitle: { color: uiColors.text, ...uiType.headlineMedium, fontWeight: '800' },
+  courseMeta: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: uiSpacing.xs, marginTop: uiSpacing.md },
+  ratingText: { color: uiColors.text, fontSize: uiType.bodySmall.fontSize, fontWeight: '700' },
+  metaSeparator: { color: uiColors.textMuted, marginHorizontal: 2 },
+  metaText: { color: uiColors.textMuted, fontSize: uiType.bodySmall.fontSize },
+  teacherCard: { flexDirection: 'row', alignItems: 'center', gap: uiSpacing.md, paddingVertical: uiSpacing.md, marginTop: uiSpacing.gutter, borderTopWidth: 1, borderBottomWidth: 1, borderColor: uiColors.border },
+  teacherAvatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: uiColors.border },
   teacherInfo: { flex: 1 },
-  teacherName: { color: colors.text, fontSize: fontSize.md, fontWeight: '700' },
-  teacherHeadline: { color: colors.textMuted, fontSize: fontSize.sm, marginTop: 2 },
-  sectionTitle: { color: colors.text, fontSize: fontSize.lg, fontWeight: '700', marginTop: spacing.xl, marginBottom: spacing.sm },
-  description: { color: colors.textMuted, fontSize: fontSize.md, lineHeight: 23 },
-  enrollButton: { minHeight: 48, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.purple, borderRadius: radius.md, marginTop: spacing.lg },
-  enrollButtonText: { color: '#fff', fontSize: fontSize.md, fontWeight: '700' },
+  teacherName: { color: uiColors.text, fontSize: uiType.bodyMedium.fontSize, fontWeight: '700' },
+  teacherHeadline: { color: uiColors.textMuted, fontSize: uiType.bodySmall.fontSize, marginTop: 2 },
+  sectionTitle: { color: uiColors.text, fontSize: uiType.headlineSmall.fontSize, fontWeight: '700', marginTop: uiSpacing.lg, marginBottom: uiSpacing.sm },
+  description: { color: uiColors.textMuted, ...uiType.bodyMedium },
+  enrollButton: { minHeight: 48, alignItems: 'center', justifyContent: 'center', backgroundColor: uiColors.primaryContainer, borderRadius: uiRadius.lg, marginTop: uiSpacing.gutter },
+  enrollButtonText: { color: uiColors.onPrimary, fontSize: uiType.bodyMedium.fontSize, fontWeight: '700' },
   disabledButton: { opacity: 0.55 },
-  learningButton: { minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginTop: spacing.lg, backgroundColor: colors.primary, borderRadius: radius.md },
-  learningButtonText: { color: '#fff', fontSize: fontSize.md, fontWeight: '700' },
-  bottomBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  learningButton: { minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: uiSpacing.sm, marginTop: uiSpacing.gutter, backgroundColor: uiColors.primary, borderRadius: uiRadius.lg },
+  learningButtonText: { color: uiColors.onPrimary, fontSize: uiType.bodyMedium.fontSize, fontWeight: '700' },
+  bottomBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: uiSpacing.md, backgroundColor: uiColors.surface, borderTopWidth: 1, borderTopColor: uiColors.border, paddingHorizontal: uiSpacing.gutter, paddingTop: uiSpacing.md },
   priceBlock: { flex: 1 },
-  price: { color: colors.primary, fontSize: fontSize.xl, fontWeight: '800' },
-  originalPrice: { color: colors.textMuted, fontSize: fontSize.xs, textDecorationLine: 'line-through', marginTop: 2 },
-  cartButton: { minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, backgroundColor: colors.primary, paddingHorizontal: spacing.lg, borderRadius: radius.md },
-  cartButtonText: { color: '#fff', fontSize: fontSize.sm, fontWeight: '700' },
-  tabContent: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
-  contentHeading: { color: colors.text, fontSize: fontSize.xl, fontWeight: '800' },
-  contentSubheading: { color: colors.textMuted, fontSize: fontSize.sm, marginTop: spacing.xs, marginBottom: spacing.lg },
-  sectionCard: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, marginBottom: spacing.md, overflow: 'hidden' },
-  chapterButton: { minHeight: 68, flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, gap: spacing.md },
-  chapterNumber: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primarySoft, borderRadius: radius.pill },
-  chapterNumberText: { color: colors.primary, fontWeight: '700' },
+  price: { color: uiColors.primary, fontSize: uiType.headlineMedium.fontSize, fontWeight: '800' },
+  originalPrice: { color: uiColors.textMuted, fontSize: uiType.labelSmall.fontSize, textDecorationLine: 'line-through', marginTop: 2 },
+  cartButton: { minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: uiSpacing.sm, backgroundColor: uiColors.primary, paddingHorizontal: uiSpacing.gutter, borderRadius: uiRadius.lg },
+  cartButtonText: { color: uiColors.onPrimary, fontSize: uiType.bodySmall.fontSize, fontWeight: '700' },
+  tabContent: { paddingHorizontal: uiSpacing.gutter, paddingTop: uiSpacing.gutter },
+  contentHeading: { color: uiColors.text, fontSize: uiType.headlineMedium.fontSize, fontWeight: '800' },
+  contentSubheading: { color: uiColors.textMuted, fontSize: uiType.bodySmall.fontSize, marginTop: uiSpacing.xs, marginBottom: uiSpacing.gutter },
+  sectionCard: { backgroundColor: uiColors.surface, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.lg, marginBottom: uiSpacing.md, overflow: 'hidden', ...uiShadow.small },
+  chapterButton: { minHeight: 68, flexDirection: 'row', alignItems: 'center', paddingHorizontal: uiSpacing.md, gap: uiSpacing.md },
+  chapterNumber: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center', backgroundColor: uiColors.primarySoft, borderRadius: uiRadius.pill },
+  chapterNumberText: { color: uiColors.primary, fontWeight: '700' },
   chapterInfo: { flex: 1 },
-  chapterTitle: { color: colors.text, fontSize: fontSize.md, fontWeight: '700' },
-  chapterMeta: { color: colors.textMuted, fontSize: fontSize.xs, marginTop: 3 },
-  lessonRow: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border },
-  lessonTitle: { flex: 1, color: colors.text, fontSize: fontSize.sm },
-  lessonDuration: { color: colors.textMuted, fontSize: fontSize.xs },
-  reviewsSummary: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md, padding: spacing.md, backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border },
-  reviewScore: { color: colors.text, fontSize: 30, fontWeight: '800' },
+  chapterTitle: { color: uiColors.text, fontSize: uiType.bodyMedium.fontSize, fontWeight: '700' },
+  chapterMeta: { color: uiColors.textMuted, fontSize: uiType.labelSmall.fontSize, marginTop: 3 },
+  lessonRow: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: uiSpacing.sm, paddingHorizontal: uiSpacing.gutter, borderTopWidth: 1, borderTopColor: uiColors.border },
+  lessonTitle: { flex: 1, color: uiColors.text, fontSize: uiType.bodySmall.fontSize },
+  lessonDuration: { color: uiColors.textMuted, fontSize: uiType.labelSmall.fontSize },
+  reviewsSummary: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: uiSpacing.md, padding: uiSpacing.md, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, borderWidth: 1, borderColor: uiColors.border, ...uiShadow.small },
+  reviewScore: { color: uiColors.text, fontSize: uiType.displayMobile.fontSize, fontWeight: '800' },
   stars: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  reviewTotal: { color: colors.textMuted, fontSize: fontSize.xs, marginTop: spacing.xs },
+  reviewTotal: { color: uiColors.textMuted, fontSize: uiType.labelSmall.fontSize, marginTop: uiSpacing.xs },
   ratingFilters: { flex: 1, minWidth: 0 },
-  ratingFilterList: { alignItems: 'center', gap: spacing.xs, paddingRight: spacing.xs },
-  ratingChip: { paddingHorizontal: spacing.sm, paddingVertical: spacing.sm, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, backgroundColor: colors.surface },
-  ratingChipActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
-  ratingChipText: { color: colors.textMuted, fontSize: fontSize.xs, fontWeight: '600' },
-  ratingChipTextActive: { color: colors.primary },
-  reviewCard: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: spacing.md, marginTop: spacing.md },
-  reviewTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
-  reviewerIdentity: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flex: 1 },
-  reviewerAvatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.border },
-  reviewerName: { color: colors.text, fontSize: fontSize.sm, fontWeight: '700' },
-  reviewDate: { color: colors.textMuted, fontSize: fontSize.xs, marginTop: 2 },
-  reviewComment: { color: colors.text, fontSize: fontSize.sm, lineHeight: 21, marginTop: spacing.md },
-  emptyTab: { alignItems: 'center', justifyContent: 'center', padding: spacing.xl, marginTop: spacing.lg, backgroundColor: colors.surface, borderRadius: radius.md },
-  emptyTabText: { color: colors.textMuted, fontSize: fontSize.sm, textAlign: 'center', marginTop: spacing.md },
-  notice: { padding: spacing.md, marginHorizontal: spacing.lg, marginTop: spacing.lg, borderRadius: radius.md },
-  successNotice: { backgroundColor: colors.primarySoft },
-  errorNotice: { backgroundColor: '#FCEAEA' },
-  noticeText: { color: colors.primary, fontSize: fontSize.sm, fontWeight: '600' },
-  errorNoticeText: { color: colors.danger },
+  ratingFilterList: { alignItems: 'center', gap: uiSpacing.xs, paddingRight: uiSpacing.xs },
+  ratingChip: { minHeight: 44, justifyContent: 'center', paddingHorizontal: uiSpacing.md, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.pill, backgroundColor: uiColors.surface },
+  ratingChipActive: { borderColor: uiColors.primary, backgroundColor: uiColors.primarySoft },
+  ratingChipText: { color: uiColors.textMuted, fontSize: uiType.labelSmall.fontSize, fontWeight: '600' },
+  ratingChipTextActive: { color: uiColors.primary },
+  reviewCard: { backgroundColor: uiColors.surface, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.lg, padding: uiSpacing.md, marginTop: uiSpacing.md, ...uiShadow.small },
+  reviewTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: uiSpacing.sm },
+  reviewerIdentity: { flexDirection: 'row', alignItems: 'center', gap: uiSpacing.sm, flex: 1 },
+  reviewerAvatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: uiColors.border },
+  reviewerName: { color: uiColors.text, fontSize: uiType.bodySmall.fontSize, fontWeight: '700' },
+  reviewDate: { color: uiColors.textMuted, fontSize: uiType.labelSmall.fontSize, marginTop: 2 },
+  reviewComment: { color: uiColors.text, ...uiType.bodyMedium, marginTop: uiSpacing.md },
+  emptyTab: { alignItems: 'center', justifyContent: 'center', padding: uiSpacing.lg, marginTop: uiSpacing.gutter, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg },
+  emptyTabText: { color: uiColors.textMuted, fontSize: uiType.bodySmall.fontSize, textAlign: 'center', marginTop: uiSpacing.md },
+  notice: { padding: uiSpacing.md, marginHorizontal: uiSpacing.gutter, marginTop: uiSpacing.gutter, borderRadius: uiRadius.lg },
+  successNotice: { backgroundColor: uiColors.primarySoft },
+  errorNotice: { backgroundColor: uiColors.dangerSoft },
+  noticeText: { color: uiColors.primary, fontSize: uiType.bodySmall.fontSize, fontWeight: '600' },
+  errorNoticeText: { color: uiColors.danger },
 });

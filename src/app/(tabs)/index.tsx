@@ -15,7 +15,7 @@ import { getPersonalizedCourses } from '../../services/recommendationService';
 import { CourseCard } from '../../components/CourseCard';
 import { SectionHeader } from '../../components/SectionHeader';
 import { ErrorView, Loading } from '../../components/ScreenState';
-import { colors, fontSize, radius, spacing } from '../../theme';
+import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Category, Course, Teacher } from '../../types';
 
 type HomeData = {
@@ -83,12 +83,12 @@ export default function HomeScreen() {
     <View style={styles.root}>
       <SafeAreaView edges={['top']} style={styles.header}>
         <View style={styles.headerRow}>
-          <View style={{ flex: 1 }}>
+          <View style={styles.headerIdentity}>
             <Text style={styles.hello}>Xin chào, {name}!</Text>
             <Text style={styles.helloSub}>Hôm nay bạn muốn học gì?</Text>
           </View>
           <Pressable onPress={() => router.push('/cart')} hitSlop={10} style={styles.iconBtn}>
-            <Ionicons name="cart-outline" size={24} color="#fff" />
+            <Ionicons name="cart-outline" size={24} color={uiColors.textMuted} />
             {cartItems.length > 0 && (
               <View style={styles.dot}><Text style={styles.dotText}>{cartItems.length}</Text></View>
             )}
@@ -97,34 +97,16 @@ export default function HomeScreen() {
       </SafeAreaView>
 
       <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
-        contentContainerStyle={{ paddingBottom: spacing.xxl }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={uiColors.primary} />}
+        contentContainerStyle={styles.scrollContent}
       >
-        {user && (
-          <Pressable style={styles.chatEntry} onPress={() => router.push('/chat')}>
-            <Ionicons name="chatbubble-ellipses-outline" size={22} color={colors.primary} />
-            <Text style={styles.chatEntryText}>Hỏi trợ lý AI để tìm khóa học phù hợp</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.primary} />
-          </Pressable>
-        )}
-        {/* Banner khuyến mãi */}
-        <View style={styles.banner}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.bannerLabel}>QUẢN LÝ DỰ ÁN</Text>
-            <Text style={styles.bannerTitle}>Giảm 20%</Text>
-            <Pressable style={styles.bannerBtn} onPress={() => router.push('/(tabs)/search')}>
-              <Text style={styles.bannerBtnText}>Tham gia ngay</Text>
-            </Pressable>
-          </View>
-        </View>
-
         {/* Danh mục */}
         <SectionHeader title="Danh mục" onViewMore={() => router.push('/(tabs)/search')} />
         <View style={styles.catGrid}>
           {data.categories.map((c) => (
             <Pressable key={c.id} style={styles.catItem} onPress={() => router.push({ pathname: '/(tabs)/search', params: { categoryId: String(c.id) } })}>
-              <View style={[styles.catIcon, { backgroundColor: c.color ?? colors.primary }]}>
-                <Feather name={(c.icon ?? 'book') as keyof typeof Feather.glyphMap} size={18} color="#fff" />
+              <View style={[styles.catIcon, { backgroundColor: c.color ?? uiColors.primary }]}>
+                <Feather name={(c.icon ?? 'book') as keyof typeof Feather.glyphMap} size={18} color={uiColors.onPrimary} />
               </View>
               <Text style={styles.catName}>{c.name}</Text>
             </Pressable>
@@ -158,6 +140,12 @@ export default function HomeScreen() {
           )}
         />
       </ScrollView>
+      {user && (
+        <Pressable style={styles.chatFloat} onPress={() => router.push('/chat')} accessibilityRole="button" accessibilityLabel="Hỏi trợ lý AI để tìm khóa học phù hợp">
+          <Ionicons name="chatbubble-ellipses-outline" size={22} color={uiColors.onPrimary} />
+          <Text style={styles.chatFloatText}>Trợ lý AI</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -170,35 +158,33 @@ function HorizontalCourses({ courses }: { courses: Course[] }) {
       data={courses}
       keyExtractor={keyOf}
       contentContainerStyle={styles.hList}
-      ItemSeparatorComponent={() => <View style={{ width: spacing.md }} />}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
       renderItem={({ item }) => <CourseCard course={item} />}
     />
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  header: { backgroundColor: colors.primary },
-  headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
-  hello: { color: '#fff', fontSize: fontSize.xl, fontWeight: '700' },
-  helloSub: { color: '#fff', fontSize: fontSize.sm, marginTop: 2 },
-  iconBtn: { padding: spacing.xs },
-  dot: { position: 'absolute', top: -2, right: -4, backgroundColor: colors.danger, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
-  dotText: { color: '#fff', fontSize: 10, fontWeight: '700' },
-  banner: { marginHorizontal: spacing.lg, marginTop: spacing.lg, borderRadius: radius.md, backgroundColor: colors.purple, padding: spacing.xl, flexDirection: 'row' },
-  chatEntry: { marginHorizontal: spacing.lg, marginTop: spacing.lg, padding: spacing.lg, borderRadius: radius.md, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  chatEntryText: { flex: 1, color: colors.text, fontSize: fontSize.md, fontWeight: '600' },
-  bannerLabel: { color: '#fff', fontSize: fontSize.xs, opacity: 0.9 },
-  bannerTitle: { color: '#fff', fontSize: fontSize.xxl, fontWeight: '800', marginVertical: spacing.sm },
-  bannerBtn: { alignSelf: 'flex-start', backgroundColor: colors.primary, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radius.sm },
-  bannerBtnText: { color: '#fff', fontWeight: '600' },
-  catGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: spacing.lg, gap: spacing.md },
-  catItem: { width: '47.5%', flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, padding: spacing.md },
-  catIcon: { width: 36, height: 36, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center' },
-  catName: { fontSize: fontSize.md, color: colors.text },
-  hList: { paddingHorizontal: spacing.lg },
-  teacherCard: { width: 150, marginRight: spacing.md, backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, padding: spacing.md },
-  teacherImg: { width: '100%', height: 110, borderRadius: radius.sm },
-  teacherName: { fontSize: fontSize.md, fontWeight: '700', color: colors.text, marginTop: spacing.sm },
-  teacherSub: { fontSize: fontSize.xs, color: colors.textMuted, marginTop: 2 },
+  root: { flex: 1, backgroundColor: uiColors.background },
+  header: { backgroundColor: uiColors.background },
+  headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: uiSpacing.gutter, paddingVertical: uiSpacing.sm },
+  headerIdentity: { flex: 1 },
+  hello: { color: uiColors.text, ...uiType.headlineSmall },
+  helloSub: { color: uiColors.textMuted, ...uiType.bodySmall, marginTop: uiSpacing.xs },
+  iconBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.md },
+  dot: { position: 'absolute', top: 0, right: 0, backgroundColor: uiColors.danger, minWidth: 16, height: 16, borderRadius: uiRadius.pill, alignItems: 'center', justifyContent: 'center', paddingHorizontal: uiSpacing.xs },
+  dotText: { color: uiColors.onDanger, ...uiType.labelSmall },
+  scrollContent: { paddingTop: uiSpacing.md, paddingBottom: uiSpacing.xl * 3 },
+  chatFloat: { position: 'absolute', right: uiSpacing.gutter, bottom: uiSpacing.gutter, minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: uiSpacing.sm, paddingHorizontal: uiSpacing.md, borderRadius: uiRadius.pill, backgroundColor: uiColors.primary, ...uiShadow.large },
+  chatFloatText: { color: uiColors.onPrimary, ...uiType.labelLarge },
+  catGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: uiSpacing.gutter, gap: uiSpacing.md },
+  catItem: { width: '47%', minHeight: 68, flexDirection: 'row', alignItems: 'center', gap: uiSpacing.sm, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, borderWidth: 1, borderColor: uiColors.border, padding: uiSpacing.sm, ...uiShadow.small },
+  catIcon: { width: 44, height: 44, borderRadius: uiRadius.md, alignItems: 'center', justifyContent: 'center' },
+  catName: { flex: 1, ...uiType.labelLarge, color: uiColors.text },
+  hList: { paddingHorizontal: uiSpacing.gutter },
+  separator: { width: uiSpacing.md },
+  teacherCard: { width: 150, marginRight: uiSpacing.md, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, borderWidth: 1, borderColor: uiColors.border, padding: uiSpacing.md, ...uiShadow.small },
+  teacherImg: { width: '100%', height: 110, borderRadius: uiRadius.md },
+  teacherName: { ...uiType.labelLarge, fontWeight: '700', color: uiColors.text, marginTop: uiSpacing.sm },
+  teacherSub: { ...uiType.bodySmall, color: uiColors.textMuted, marginTop: uiSpacing.xs },
 });

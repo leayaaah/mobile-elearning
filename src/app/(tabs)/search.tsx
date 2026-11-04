@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View,
+  ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
@@ -12,7 +12,7 @@ import { useAsync } from '../../hooks/useAsync';
 import { useDebounce } from '../../hooks/useDebounce';
 import { getCategories, getRecommendedCourses } from '../../services/courseService';
 import { searchCoursesWithAI } from '../../services/semanticSearchService';
-import { colors, fontSize, radius, spacing } from '../../theme';
+import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Category, Course, SearchResult } from '../../types';
 import { getErrorMessage } from '../../utils/format';
 
@@ -117,25 +117,25 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <Text style={styles.title}>Tìm kiếm</Text>
         <View style={styles.searchBox}>
-          <Feather name="search" size={19} color={colors.textMuted} />
+          <Feather name="search" size={19} color={uiColors.outline} />
           <TextInput
             accessibilityLabel="Tìm khóa học"
             placeholder="Tìm khóa học bạn quan tâm"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={uiColors.outline}
             value={query}
             onChangeText={setQuery}
             returnKeyType="search"
             style={styles.input}
           />
           {query.length > 0 && (
-            <Pressable accessibilityRole="button" accessibilityLabel="Xóa từ khóa" onPress={() => setQuery('')} hitSlop={10}>
-              <Feather name="x-circle" size={19} color={colors.textMuted} />
+            <Pressable accessibilityRole="button" accessibilityLabel="Xóa từ khóa" onPress={() => setQuery('')} hitSlop={12}>
+              <Feather name="x-circle" size={19} color={uiColors.outline} />
             </Pressable>
           )}
         </View>
       </SafeAreaView>
 
-      {discoveryLoading && !discovery ? <View style={styles.inlineLoading}><ActivityIndicator color={colors.primary} /></View> : null}
+      {discoveryLoading && !discovery ? <View style={styles.inlineLoading}><ActivityIndicator color={uiColors.primary} /></View> : null}
       {discoveryError && !discovery ? (
         <ErrorView message={discoveryError} onRetry={reloadDiscovery} />
       ) : null}
@@ -182,8 +182,8 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
           </View>
 
           {showDiscovery && !selectedCategoryId && discovery.recommended.length > 0 && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, {marginBottom: 10}]}>Dành cho bạn</Text>
+            <View style={styles.recommendedSection}>
+              <Text style={[styles.sectionTitle, styles.recommendedTitle]}>Dành cho bạn</Text>
               {discovery.recommended.map((course) => <CourseCard key={course.id} course={course} variant="horizontal" />)}
             </View>
           )}
@@ -198,7 +198,7 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
       {searchError ? <ErrorView message={searchError} onRetry={() => setSearchRetry((value) => value + 1)} /> : null}
       {!loadingResults && !searchError && courses.length === 0 ? (
         <View style={styles.emptyState}>
-          <Feather name="search" size={28} color={colors.textMuted} />
+          <Feather name="search" size={28} color={uiColors.outline} />
           <Text style={styles.emptyTitle}>Chưa tìm thấy khóa học</Text>
           <Text style={styles.emptyText}>Thử từ khóa khác hoặc chọn một danh mục.</Text>
         </View>
@@ -207,6 +207,7 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
   );
 
   return (
+    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <FlatList
       style={styles.root}
       contentContainerStyle={styles.content}
@@ -214,7 +215,7 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
       keyExtractor={keyOf}
       renderItem={({ item }) => <CourseCard course={item} variant="horizontal" />}
       ListHeaderComponent={header}
-      ListFooterComponent={loadingMore ? <ActivityIndicator style={styles.footer} color={colors.primary} /> : undefined}
+      ListFooterComponent={loadingMore ? <ActivityIndicator style={styles.footer} color={uiColors.primary} /> : undefined}
       onEndReached={loadMore}
       onEndReachedThreshold={0.45}
       keyboardShouldPersistTaps="handled"
@@ -222,30 +223,33 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
       maxToRenderPerBatch={8}
       windowSize={7}
     />
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  content: { paddingBottom: spacing.xxl },
-  safeArea: { backgroundColor: colors.background, paddingHorizontal: spacing.lg, paddingBottom: spacing.md },
-  title: { color: colors.text, fontSize: fontSize.xxl, fontWeight: '700', marginTop: spacing.sm, marginBottom: spacing.md },
-  searchBox: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface },
-  input: { flex: 1, color: colors.text, fontSize: fontSize.md, paddingVertical: spacing.sm },
-  inlineLoading: { padding: spacing.lg },
-  section: { marginTop: spacing.xl, paddingHorizontal: spacing.lg },
-  sectionTitle: { color: colors.text, fontSize: fontSize.lg, fontWeight: '700' },
-  chipWrap: { width: '100%', alignSelf: 'stretch', flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md },
-  topicChip: { backgroundColor: colors.primarySoft, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.pill },
-  topicText: { color: colors.primary, fontSize: fontSize.sm, fontWeight: '600' },
-  categoryChip: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.pill },
-  categoryChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  categoryText: { color: colors.textMuted, fontSize: fontSize.sm },
-  categoryTextActive: { color: '#fff', fontWeight: '600' },
-  resultsHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: spacing.lg, marginTop: spacing.xl, marginBottom: spacing.md },
-  resultCount: { color: colors.textMuted, fontSize: fontSize.sm },
-  emptyState: { alignItems: 'center', padding: spacing.xl, marginHorizontal: spacing.lg, backgroundColor: colors.surface, borderRadius: radius.md },
-  emptyTitle: { color: colors.text, fontSize: fontSize.md, fontWeight: '700', marginTop: spacing.md },
-  emptyText: { color: colors.textMuted, fontSize: fontSize.sm, textAlign: 'center', marginTop: spacing.xs },
-  footer: { paddingVertical: spacing.lg },
+  root: { flex: 1, backgroundColor: uiColors.background },
+  content: { paddingBottom: uiSpacing.xl },
+  safeArea: { backgroundColor: uiColors.background, paddingHorizontal: uiSpacing.gutter, paddingBottom: uiSpacing.md },
+  title: { color: uiColors.text, ...uiType.headlineLarge, marginTop: uiSpacing.sm, marginBottom: uiSpacing.md },
+  searchBox: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: uiSpacing.sm, paddingHorizontal: uiSpacing.md, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.md, backgroundColor: uiColors.surface, ...uiShadow.small },
+  input: { flex: 1, color: uiColors.text, ...uiType.bodyMedium, paddingVertical: uiSpacing.sm },
+  inlineLoading: { padding: uiSpacing.gutter },
+  section: { marginTop: uiSpacing.lg, paddingHorizontal: uiSpacing.gutter },
+  recommendedSection: { marginTop: uiSpacing.lg },
+  sectionTitle: { color: uiColors.text, ...uiType.headlineSmall },
+  recommendedTitle: { marginBottom: uiSpacing.sm, paddingHorizontal: uiSpacing.gutter },
+  chipWrap: { width: '100%', alignSelf: 'stretch', flexDirection: 'row', flexWrap: 'wrap', gap: uiSpacing.sm, marginTop: uiSpacing.md },
+  topicChip: { minHeight: 44, justifyContent: 'center', backgroundColor: uiColors.primarySoft, paddingHorizontal: uiSpacing.md, borderRadius: uiRadius.pill },
+  topicText: { color: uiColors.primary, ...uiType.labelMedium },
+  categoryChip: { minHeight: 44, justifyContent: 'center', backgroundColor: uiColors.surface, borderColor: uiColors.border, borderWidth: 1, paddingHorizontal: uiSpacing.md, borderRadius: uiRadius.pill },
+  categoryChipActive: { backgroundColor: uiColors.primary, borderColor: uiColors.primary },
+  categoryText: { color: uiColors.textMuted, ...uiType.bodyMedium },
+  categoryTextActive: { color: uiColors.onPrimary, fontWeight: '600' },
+  resultsHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: uiSpacing.gutter, marginTop: uiSpacing.lg, marginBottom: uiSpacing.md },
+  resultCount: { color: uiColors.textMuted, ...uiType.bodySmall },
+  emptyState: { alignItems: 'center', padding: uiSpacing.lg, marginHorizontal: uiSpacing.gutter, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, ...uiShadow.small },
+  emptyTitle: { color: uiColors.text, ...uiType.headlineSmall, marginTop: uiSpacing.md },
+  emptyText: { color: uiColors.textMuted, ...uiType.bodyMedium, textAlign: 'center', marginTop: uiSpacing.xs },
+  footer: { paddingVertical: uiSpacing.lg },
 });

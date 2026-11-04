@@ -1,14 +1,16 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CourseCard } from '../components/CourseCard';
+import { ChatBubble } from '../components/ChatBubble';
 import { useAuth } from '../context/AuthContext';
+import { useChatSession, type ChatMessage } from '../context/ChatSessionContext';
 import { sendAdvisorMessage } from '../services/chatService';
-import { AdvisorError, type AdvisorReply, type ChatTurn } from '../types/ai';
-import { colors, fontSize, radius, spacing } from '../theme';
+import { AdvisorError, type ChatTurn } from '../types/ai';
+import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
 
-type Message = { id: number; role: 'user' | 'assistant'; content: string; result?: AdvisorReply };
 const errorText = (cause: unknown) => {
   if (cause instanceof AdvisorError) {
     switch (cause.code) {
@@ -25,37 +27,31 @@ const errorText = (cause: unknown) => {
 export default function ChatScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [draft, setDraft] = useState('');
-  const [pending, setPending] = useState(false);
-  const [failure, setFailure] = useState<string | null>(null);
-  const [retryText, setRetryText] = useState<string | null>(null);
-  const nextId = useRef(1);
-  const list = useRef<FlatList<Message>>(null);
-  const sending = useRef(false);
+  const { messages, setMessages, draft, setDraft, pending, setPending, failure, setFailure, retryText, setRetryText, nextIdRef, sendingRef } = useChatSession();
+  const list = useRef<FlatList<ChatMessage>>(null);
 
   async function send(text: string, retry = false) {
     const content = text.trim();
-    if (!content || sending.current || !user) return;
+    if (!content || sendingRef.current || !user) return;
     if (text.length > 500) { setFailure('Tin nhắn không được vượt quá 500 ký tự.'); return; }
-    sending.current = true;
+    sendingRef.current = true;
     setPending(true);
     setFailure(null);
     setRetryText(null);
     const previous = retry ? messages.slice(0, -1) : messages;
     const history: ChatTurn[] = previous.slice(-6).map(({ role, content: value }) => ({ role, content: value }));
     if (!retry) {
-      setMessages((current) => [...current, { id: nextId.current++, role: 'user', content }]);
+      setMessages((current) => [...current, { id: nextIdRef.current++, role: 'user', content }]);
       setDraft('');
     }
     try {
       const result = await sendAdvisorMessage(content, history);
-      setMessages((current) => [...current, { id: nextId.current++, role: 'assistant', content: result.reply, result }]);
+      setMessages((current) => [...current, { id: nextIdRef.current++, role: 'assistant', content: result.reply, result }]);
     } catch (cause) {
       setFailure(errorText(cause));
       setRetryText(content);
     } finally {
-      sending.current = false;
+      sendingRef.current = false;
       setPending(false);
     }
   }
@@ -63,8 +59,10 @@ export default function ChatScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12}><Text style={styles.back}>‹  Quay lại</Text></Pressable>
         <Text style={styles.title}>Trợ lý tư vấn khóa học</Text>
+        <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Đóng trợ lý" style={styles.closeButton}>
+          <Ionicons name="close" size={24} color={uiColors.text} />
+        </Pressable>
       </View>
       {!user ? <Text style={styles.notice}>Vui lòng đăng nhập để hỏi trợ lý.</Text> : (
         <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -76,20 +74,19 @@ export default function ChatScreen() {
             onContentSizeChange={() => list.current?.scrollToEnd({ animated: true })}
             ListEmptyComponent={<Text style={styles.welcome}>Bạn muốn học gì? Hãy mô tả mục tiêu của mình để nhận gợi ý khóa học.</Text>}
             renderItem={({ item }) => (
-              <View style={item.role === 'user' ? styles.userBubble : styles.assistantBubble}>
-                <Text style={styles.messageText}>{item.content}</Text>
+              <ChatBubble role={item.role} content={item.content}>
                 {item.result?.courses.map((course) => <View key={course.id} style={styles.course}><CourseCard course={course} variant="horizontal" /></View>)}
-              </View>
+              </ChatBubble>
             )}
             ListFooterComponent={<>
-              {pending && <View style={styles.waiting}><ActivityIndicator color={colors.primary} /><Text> Đang soạn câu trả lời...</Text></View>}
+              {pending && <View style={styles.waiting}><ActivityIndicator color={uiColors.primary} /><Text style={styles.waitingText}> Đang soạn câu trả lời...</Text></View>}
               {failure && <View style={styles.errorBox}><Text style={styles.errorText}>{failure}</Text>
-                {retryText && <Pressable disabled={pending} onPress={() => void send(retryText, true)}><Text style={styles.retry}>Thử lại</Text></Pressable>}
+                {retryText && <Pressable disabled={pending} onPress={() => void send(retryText, true)} style={styles.retryButton}><Text style={styles.retry}>Thử lại</Text></Pressable>}
               </View>}
             </>}
           />
           <View style={styles.inputRow}>
-            <TextInput value={draft} onChangeText={setDraft} placeholder="Nhập nhu cầu học của bạn..." multiline maxLength={500}
+            <TextInput value={draft} onChangeText={setDraft} placeholder="Nhập nhu cầu học của bạn..." placeholderTextColor={uiColors.outline} multiline maxLength={500}
               style={styles.input} editable={!pending} accessibilityLabel="Tin nhắn tư vấn" />
             <Pressable disabled={pending || !draft.trim()} onPress={() => void send(draft)} style={[styles.send, (pending || !draft.trim()) && styles.disabled]}>
               <Text style={styles.sendText}>Gửi</Text>
@@ -102,21 +99,22 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background }, flex: { flex: 1 },
-  header: { padding: spacing.lg, backgroundColor: colors.surface, borderBottomWidth: 1, borderColor: colors.border },
-  back: { color: colors.primary, fontSize: fontSize.md }, title: { color: colors.text, fontSize: fontSize.xl, fontWeight: '700', marginTop: spacing.sm },
-  messages: { flexGrow: 1, padding: spacing.lg, gap: spacing.md },
-  welcome: { color: colors.textMuted, textAlign: 'center', marginTop: spacing.xl, fontSize: fontSize.md },
-  notice: { padding: spacing.lg, color: colors.text },
-  userBubble: { alignSelf: 'flex-end', maxWidth: '90%', backgroundColor: colors.primarySoft, padding: spacing.md, borderRadius: radius.md },
-  assistantBubble: { alignSelf: 'flex-start', width: '100%', backgroundColor: colors.surface, padding: spacing.md, borderRadius: radius.md },
-  messageText: { color: colors.text, fontSize: fontSize.md },
-  course: { marginTop: spacing.md, marginHorizontal: -spacing.lg },
-  waiting: { flexDirection: 'row', alignItems: 'center', padding: spacing.md },
-  errorBox: { backgroundColor: colors.surface, padding: spacing.md, borderRadius: radius.md },
-  errorText: { color: colors.danger }, retry: { color: colors.primary, fontWeight: '700', marginTop: spacing.sm },
-  inputRow: { flexDirection: 'row', alignItems: 'flex-end', padding: spacing.md, backgroundColor: colors.surface, gap: spacing.sm },
-  input: { flex: 1, maxHeight: 120, minHeight: 44, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: spacing.md, color: colors.text },
-  send: { backgroundColor: colors.primary, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderRadius: radius.md },
-  disabled: { opacity: 0.5 }, sendText: { color: '#fff', fontWeight: '700' },
+  root: { flex: 1, backgroundColor: uiColors.background }, flex: { flex: 1 },
+  header: { minHeight: 56, paddingLeft: uiSpacing.gutter, paddingRight: uiSpacing.sm, backgroundColor: uiColors.background, borderBottomWidth: 1, borderColor: uiColors.border, flexDirection: 'row', alignItems: 'center' },
+  closeButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  title: { flex: 1, color: uiColors.text, ...uiType.headlineMedium },
+  messages: { flexGrow: 1, padding: uiSpacing.gutter, gap: uiSpacing.md },
+  welcome: { color: uiColors.textMuted, ...uiType.bodyMedium, textAlign: 'center', marginTop: uiSpacing.lg },
+  notice: { padding: uiSpacing.gutter, color: uiColors.text, ...uiType.bodyMedium },
+  course: { marginTop: uiSpacing.md, marginHorizontal: -uiSpacing.md },
+  waiting: { flexDirection: 'row', alignItems: 'center', padding: uiSpacing.md },
+  waitingText: { color: uiColors.textMuted, ...uiType.bodyMedium },
+  errorBox: { backgroundColor: uiColors.dangerSoft, padding: uiSpacing.md, borderRadius: uiRadius.lg },
+  errorText: { color: uiColors.danger, ...uiType.bodyMedium },
+  retryButton: { minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' },
+  retry: { color: uiColors.primary, ...uiType.labelLarge },
+  inputRow: { flexDirection: 'row', alignItems: 'flex-end', padding: uiSpacing.md, backgroundColor: uiColors.surface, gap: uiSpacing.sm, borderTopWidth: 1, borderTopColor: uiColors.border, ...uiShadow.small },
+  input: { flex: 1, maxHeight: 120, minHeight: 44, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.md, padding: uiSpacing.md, color: uiColors.text, ...uiType.bodyMedium },
+  send: { minHeight: 44, justifyContent: 'center', backgroundColor: uiColors.primary, paddingHorizontal: uiSpacing.gutter, borderRadius: uiRadius.md },
+  disabled: { opacity: 0.5 }, sendText: { color: uiColors.onPrimary, ...uiType.labelLarge },
 });

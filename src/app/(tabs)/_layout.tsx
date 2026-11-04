@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../theme';
+import { uiColors, uiShadow, uiSpacing, uiType } from '../../theme';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -16,8 +16,10 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: String(colors.primary),
-        tabBarInactiveTintColor: String(colors.textMuted),
+        tabBarActiveTintColor: uiColors.primary,
+        tabBarInactiveTintColor: uiColors.textMuted,
+        tabBarStyle: { backgroundColor: uiColors.surface, borderTopColor: uiColors.border, borderTopWidth: 1, paddingTop: uiSpacing.xs, ...uiShadow.small },
+        tabBarLabelStyle: uiType.labelSmall,
         tabBarIcon: ({ focused, color, size }) => {
           const [off, on] = TAB_ICONS[route.name] ?? ['ellipse-outline', 'ellipse'];
           return <Ionicons name={focused ? on : off} size={size} color={String(color)} />;
