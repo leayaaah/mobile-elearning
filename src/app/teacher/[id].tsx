@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
-import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAsync } from '../../hooks/useAsync';
 import { getTeacher, getTeacherCourses } from '../../services/courseService';
 import { ErrorView, Loading } from '../../components/ScreenState';

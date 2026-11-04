@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View,
 } from 'react-native';
@@ -8,12 +8,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ErrorView, Loading } from '../../components/ScreenState';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { SimilarCourses } from '../../components/SimilarCourses';
 import { useAuth } from '../../context/AuthContext';
 import { useBookmarks } from '../../context/BookmarkContext';
 import { useCart } from '../../context/CartContext';
 import { useAsync } from '../../hooks/useAsync';
 import { getCourseById, getCurriculum, getReviews } from '../../services/courseService';
 import { enroll, getCompletedLessonIds, isEnrolled } from '../../services/userService';
+import { trackCourseView } from '../../services/trackingService';
 import { colors, fontSize, radius, spacing } from '../../theme';
 import type { Course, Review, Section } from '../../types';
 import { formatMinutes, formatPrice, getErrorMessage, timeAgo } from '../../utils/format';
@@ -76,6 +78,9 @@ export default function CourseDetailScreen() {
   const [isEnrolledNow, setIsEnrolledNow] = useState(false);
 
   const enrolled = Boolean(data?.enrolled || isEnrolledNow);
+  useEffect(() => {
+    if (data?.course.id) void trackCourseView(user?.id, data.course.id);
+  }, [data?.course.id, user?.id]);
   const saved = data ? isSaved(data.course.id) : false;
   const alreadyInCart = data ? cart.has(data.course.id) : false;
   const visibleReviews = useMemo(() => {
@@ -152,17 +157,20 @@ export default function CourseDetailScreen() {
 
           <ScrollView contentContainerStyle={styles.scrollContent}>
             {activeTab === 'overview' && (
-              <OverviewTab
-                course={data.course}
-                saved={saved}
-                enrolled={enrolled}
-                completedLessonCount={data.completedLessonCount}
-                onToggleBookmark={() => void toggle(data.course.id)}
-                onEnroll={() => void enrollForFree()}
-                onStartLearning={() => router.push(`/learn/${data.course.id}`)}
-                enrolling={action === 'enroll'}
-                onOpenTeacher={data.course.teacher ? () => router.push(`/teacher/${data.course.teacher?.id}`) : undefined}
-              />
+              <>
+                <OverviewTab
+                  course={data.course}
+                  saved={saved}
+                  enrolled={enrolled}
+                  completedLessonCount={data.completedLessonCount}
+                  onToggleBookmark={() => void toggle(data.course.id)}
+                  onEnroll={() => void enrollForFree()}
+                  onStartLearning={() => router.push(`/learn/${data.course.id}`)}
+                  enrolling={action === 'enroll'}
+                  onOpenTeacher={data.course.teacher ? () => router.push(`/teacher/${data.course.teacher?.id}`) : undefined}
+                />
+                <SimilarCourses key={data.course.id} course={data.course} />
+              </>
             )}
             {activeTab === 'lessons' && (
               <LessonsTab sections={data.sections} expanded={expandedSections} onToggle={toggleSection} />

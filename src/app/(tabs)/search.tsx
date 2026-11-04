@@ -7,9 +7,11 @@ import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CourseCard } from '../../components/CourseCard';
 import { ErrorView, Loading } from '../../components/ScreenState';
+import { useAuth } from '../../context/AuthContext';
 import { useAsync } from '../../hooks/useAsync';
 import { useDebounce } from '../../hooks/useDebounce';
-import { getCategories, getRecommendedCourses, searchCourses } from '../../services/courseService';
+import { getCategories, getRecommendedCourses } from '../../services/courseService';
+import { searchCoursesWithAI } from '../../services/semanticSearchService';
 import { colors, fontSize, radius, spacing } from '../../theme';
 import type { Category, Course, SearchResult } from '../../types';
 import { getErrorMessage } from '../../utils/format';
@@ -36,12 +38,15 @@ export default function SearchScreen() {
 }
 
 function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
+  const { user } = useAuth();
+  const userId = user?.id;
   const [query, setQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(initialCategoryId);
   const debouncedQuery = useDebounce(query, 400);
   const { data: discovery, loading: discoveryLoading, error: discoveryError, reload: reloadDiscovery } = useAsync(loadDiscovery, []);
   const [courses, setCourses] = useState<Course[]>([]);
   const [total, setTotal] = useState(0);
+  const [resultSource, setResultSource] = useState<'semantic' | 'keyword'>('keyword');
   const [loadingResults, setLoadingResults] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -62,11 +67,12 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
     setLoadingResults(true);
     setSearchError(null);
 
-    searchCourses({ query: debouncedQuery, categoryId: selectedCategoryId, page: 0, pageSize: PAGE_SIZE })
+    searchCoursesWithAI({ query: debouncedQuery, categoryId: selectedCategoryId, page: 0, pageSize: PAGE_SIZE }, userId)
       .then((result: SearchResult) => {
         if (request !== requestId.current) return;
         setCourses(result.items);
         setTotal(result.total);
+        setResultSource(result.source ?? 'keyword');
       })
       .catch((error: unknown) => {
         if (request === requestId.current) setSearchError(getErrorMessage(error));
@@ -78,7 +84,7 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
     return () => {
       requestId.current += 1;
     };
-  }, [debouncedQuery, searchRetry, selectedCategoryId]);
+  }, [debouncedQuery, searchRetry, selectedCategoryId, userId]);
 
   const loadMore = useCallback(async () => {
     if (loadingResults || loadingMoreRef.current || courses.length >= total || searchError) return;
@@ -87,9 +93,9 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
     setLoadingMore(true);
     const request = requestId.current;
     try {
-      const result = await searchCourses({
+      const result = await searchCoursesWithAI({
         query: debouncedQuery, categoryId: selectedCategoryId, page, pageSize: PAGE_SIZE,
-      });
+      }, userId);
       if (request !== requestId.current) return;
       setCourses((current) => [...current, ...result.items]);
       setTotal(result.total);
@@ -100,7 +106,7 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
       loadingMoreRef.current = false;
       if (request === requestId.current) setLoadingMore(false);
     }
-  }, [courses.length, debouncedQuery, loadingResults, searchError, selectedCategoryId, total]);
+  }, [courses.length, debouncedQuery, loadingResults, searchError, selectedCategoryId, total, userId]);
 
   const selectTopic = useCallback((topic: string) => setQuery(topic), []);
   const showDiscovery = query.trim().length === 0;
@@ -185,7 +191,7 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
       )}
 
       <View style={styles.resultsHeader}>
-        <Text style={styles.sectionTitle}>{selectedCategory ? selectedCategory.name : 'Kết quả tìm kiếm'}</Text>
+        <Text style={styles.sectionTitle}>{selectedCategory ? selectedCategory.name : resultSource === 'semantic' ? 'Kết quả theo ngữ nghĩa' : 'Kết quả tìm kiếm'}</Text>
         {!loadingResults && !searchError && <Text style={styles.resultCount}>{total} kết quả</Text>}
       </View>
       {loadingResults && courses.length === 0 ? <Loading /> : null}

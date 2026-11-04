@@ -2,6 +2,7 @@
   "expo": {
     "name": "elearning",
     "slug": "elearning",
+    "scheme": "elearning",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,8 +26,8 @@
     "extra": {
       "router": {
         "origin": false
-      },
-      "eas": {
+      }
+      ,"eas": {
         "projectId": "45d9dbdb-9405-4335-94c1-8c85a99a20fa"
       }
     },

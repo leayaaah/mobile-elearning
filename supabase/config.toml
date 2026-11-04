@@ -1,0 +1,2 @@
+[functions.embed-courses]
+verify_jwt = false

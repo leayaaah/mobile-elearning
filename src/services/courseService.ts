@@ -56,6 +56,14 @@ export async function getCourseById(id: number): Promise<Course> {
   return data as Course;
 }
 
+export async function getCoursesByIds(ids: number[]): Promise<Course[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase.from('courses').select(COURSE_SELECT).in('id', ids);
+  if (error) throw error;
+  const byId = new Map((data as Course[]).map((course) => [course.id, course]));
+  return ids.map((id) => byId.get(id)).filter((course): course is Course => course !== undefined);
+}
+
 export async function getCurriculum(courseId: number): Promise<Section[]> {
   const { data, error } = await supabase
     .from('sections')
