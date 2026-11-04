@@ -59,7 +59,7 @@ create or replace function public.require_event_consent()
 returns trigger language plpgsql security definer set search_path = public, pg_temp as $$
 begin
   if not coalesce((select p.tracking_consent from public.profiles p where p.id = new.user_id), false) then
-    raise exception 'Tracking consent required' using errcode = '42501';
+    raise exception 'Tracking consent required' using errcode = 'PT001';
   end if;
   return new;
 end $$;
@@ -73,13 +73,19 @@ create or replace function public.record_ai_action()
 returns trigger language plpgsql security definer set search_path = public, pg_temp as $$
 begin
   if coalesce((select p.tracking_consent from public.profiles p where p.id = new.user_id), false) then
-    insert into public.user_events (user_id, course_id, event_type)
-    values (new.user_id, new.course_id, case tg_table_name
-      when 'bookmarks' then 'bookmark'
-      when 'cart_items' then 'add_to_cart'
-      when 'enrollments' then 'enroll'
-      when 'lesson_progress' then 'lesson_complete'
-    end);
+    begin
+      insert into public.user_events (user_id, course_id, event_type)
+      values (new.user_id, new.course_id, case tg_table_name
+        when 'bookmarks' then 'bookmark'
+        when 'cart_items' then 'add_to_cart'
+        when 'enrollments' then 'enroll'
+        when 'lesson_progress' then 'lesson_complete'
+      end);
+    exception when sqlstate 'PT001' then
+      -- Consent may be withdrawn between the check and the insert.
+      -- The business action must still succeed.
+      null;
+    end;
   end if;
   return new;
 end $$;
@@ -137,11 +143,11 @@ grant execute on function public.recommend_ai_courses(integer) to authenticated;
 commit;
 
 -- Verify with two real JWTs (A unset, B granted), through the REST API/client:
--- 1. A: insert own course_view -> 42501; add bookmark/cart/progress -> succeeds,
+-- 1. A: insert own course_view -> PT001; add bookmark/cart/progress -> succeeds,
 --    with no new user_events row. A cannot UPDATE tracking_consent directly.
 -- 2. B: set_tracking_consent(true); own course_view -> succeeds. B cannot read
 --    or update A's profile; B cannot insert a row with user_id=A.
--- 3. B: set_tracking_consent(false); direct insert -> 42501; recommendation
+-- 3. B: set_tracking_consent(false); direct insert -> PT001; recommendation
 --    returns cold start. Existing events remain until delete_my_tracking_data().
 -- 4. B: delete_my_tracking_data(); verify only B's events were removed.
 -- 5. With B granted, semantic-search still works and may write course_search.
