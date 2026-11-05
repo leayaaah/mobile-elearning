@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,7 +7,7 @@ import { getMyCourses } from '../../services/userService';
 import { useAsync } from '../../hooks/useAsync';
 import { ErrorView, Loading } from '../../components/ScreenState';
 import { MyCourseCard } from '../../components/MyCourseCard';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 
 type Filter = 'all' | 'learning' | 'completed';
 const FILTERS: { key: Filter; label: string }[] = [
@@ -14,6 +15,7 @@ const FILTERS: { key: Filter; label: string }[] = [
 ];
 
 export default function MyCoursesScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const { user } = useAuth();
   const [filter, setFilter] = useState<Filter>('all');
   const request = useAsync(() => {
@@ -62,7 +64,7 @@ export default function MyCoursesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: uiColors.background },
   header: { paddingHorizontal: uiSpacing.gutter, paddingTop: uiSpacing.md, paddingBottom: uiSpacing.md },
   heading: { color: uiColors.text, ...uiType.headlineLarge },

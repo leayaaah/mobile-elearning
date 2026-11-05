@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Constants from 'expo-constants';
@@ -7,9 +8,10 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { SettingsRow } from '../../components/SettingsRow';
 import { SettingsSection } from '../../components/SettingsSection';
 import { useAuth } from '../../context/AuthContext';
-import { uiColors, uiRadius, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiSpacing, uiType } from '../../theme';
 
 export default function SettingsScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const router = useRouter();
   const { signOut } = useAuth();
   const signingOutRef = useRef(false);
@@ -30,9 +32,9 @@ export default function SettingsScreen() {
     <ScreenHeader title="Cài đặt" />
     <ScrollView contentContainerStyle={styles.content}>
       <SettingsSection title="Tài khoản"><SettingsRow title="Thông tin tài khoản" detail="Họ tên, email và mật khẩu" onPress={() => router.push('/settings/account')} /></SettingsSection>
-      <SettingsSection title="Giao diện"><SettingsRow title="Tùy chỉnh giao diện" disabled /></SettingsSection>
+      <SettingsSection title="Giao diện"><SettingsRow title="Tùy chỉnh giao diện" detail="Theo thiết bị, sáng hoặc tối" onPress={() => router.push('/settings/appearance')} /></SettingsSection>
       <SettingsSection title="Quyền riêng tư"><SettingsRow title="Theo dõi hoạt động" detail="Cá nhân hóa gợi ý và xóa dữ liệu" onPress={() => router.push('/settings/privacy')} /></SettingsSection>
-      <SettingsSection title="Pháp lý"><SettingsRow title="Điều khoản sử dụng" disabled /><SettingsRow title="Chính sách quyền riêng tư" disabled /></SettingsSection>
+      <SettingsSection title="Pháp lý"><SettingsRow title="Điều khoản sử dụng" detail="Chờ nội dung được phê duyệt" onPress={() => router.push('/settings/terms')} /><SettingsRow title="Chính sách quyền riêng tư" detail="Chờ nội dung được phê duyệt" onPress={() => router.push('/settings/privacy-policy')} /></SettingsSection>
       <SettingsSection title="Về ứng dụng"><View style={styles.version}><Text style={styles.versionText}>Phiên bản {Constants.expoConfig?.version ?? '1.0.0'}</Text></View></SettingsSection>
       <Pressable style={styles.logout} disabled={signingOut} onPress={() => { void logout(); }} accessibilityRole="button" accessibilityState={{ disabled: signingOut }}>
         <Text style={styles.logoutText}>{signingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}</Text>
@@ -43,7 +45,7 @@ export default function SettingsScreen() {
   </View>;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background },
   content: { padding: uiSpacing.gutter, paddingBottom: uiSpacing.xl },
   version: { padding: uiSpacing.md }, versionText: { color: uiColors.textMuted, ...uiType.bodyMedium },

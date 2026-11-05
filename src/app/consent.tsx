@@ -1,11 +1,13 @@
+import { useThemedStyles } from '../context/ThemeContext';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useConsent } from '../context/ConsentContext';
-import { uiColors, uiRadius, uiSpacing, uiType } from '../theme';
+import { type UiColors, uiRadius, uiSpacing, uiType } from '../theme';
 
 export default function ConsentScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const router = useRouter();
   const { choose, busy } = useConsent();
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +31,7 @@ export default function ConsentScreen() {
   </ScrollView></SafeAreaView>;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background }, content: { flexGrow: 1, justifyContent: 'center', padding: uiSpacing.gutter, gap: uiSpacing.md },
   title: { color: uiColors.text, ...uiType.headlineLarge }, body: { color: uiColors.textMuted, ...uiType.bodyLarge },
   error: { color: uiColors.danger, ...uiType.bodySmall }, actions: { gap: uiSpacing.sm, marginTop: uiSpacing.lg },

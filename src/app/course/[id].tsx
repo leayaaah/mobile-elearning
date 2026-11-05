@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View,
@@ -17,7 +18,7 @@ import { getCourseById, getCurriculum, getReviews } from '../../services/courseS
 import { enroll, getCompletedLessonIds, isEnrolled } from '../../services/userService';
 import { trackCourseView } from '../../services/trackingService';
 import { useConsent } from '../../context/ConsentContext';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Course, Review, Section } from '../../types';
 import { formatMinutes, formatPrice, getErrorMessage, timeAgo } from '../../utils/format';
 
@@ -51,6 +52,7 @@ const tabs: { key: DetailTab; label: string }[] = [
 ];
 
 export default function CourseDetailScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const { id: rawId, enrollmentRequired: rawEnrollmentRequired } = useLocalSearchParams<{
     id?: string | string[];
     enrollmentRequired?: string | string[];
@@ -242,6 +244,7 @@ function OverviewTab({
   enrolling: boolean;
   onOpenTeacher?: () => void;
 }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View>
       <View style={styles.heroWrap}>
@@ -310,6 +313,7 @@ function LessonsTab({ sections, expanded, onToggle }: {
   expanded: Set<number>;
   onToggle: (sectionId: number) => void;
 }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   if (sections.length === 0) {
     return <EmptyTab message="Khóa học chưa có chương hoặc bài học." />;
   }
@@ -356,6 +360,7 @@ function ReviewsTab({
   selectedRating: number | null;
   onSelectRating: (rating: number | null) => void;
 }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.tabContent}>
       <View style={styles.reviewsSummary}>
@@ -398,6 +403,7 @@ function ReviewsTab({
 }
 
 function RatingChip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <Pressable onPress={onPress} style={[styles.ratingChip, active && styles.ratingChipActive]}>
       <Text style={[styles.ratingChipText, active && styles.ratingChipTextActive]}>{label}</Text>
@@ -406,6 +412,7 @@ function RatingChip({ label, active, onPress }: { label: string; active: boolean
 }
 
 function Stars({ rating, size }: { rating: number; size: number }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.stars}>
       {[1, 2, 3, 4, 5].map((star) => (
@@ -416,6 +423,7 @@ function Stars({ rating, size }: { rating: number; size: number }) {
 }
 
 function EmptyTab({ message }: { message: string }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.emptyTab}>
       <Feather name="book-open" size={27} color={uiColors.textMuted} />
@@ -428,7 +436,7 @@ function averageRating(reviews: Review[]) {
   return reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background },
   tabBar: { flexDirection: 'row', backgroundColor: uiColors.surface, paddingHorizontal: uiSpacing.gutter, borderBottomWidth: 1, borderBottomColor: uiColors.border },
   tabButton: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', paddingVertical: uiSpacing.sm, borderBottomWidth: 2, borderBottomColor: 'transparent' },

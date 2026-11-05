@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../context/ThemeContext';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,11 +7,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCart } from '../context/CartContext';
 import { ErrorView, Loading } from '../components/ScreenState';
 import { ScreenHeader } from '../components/ScreenHeader';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
 import { formatPrice, getErrorMessage } from '../utils/format';
 import type { Course } from '../types';
 
 export default function CartScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const router = useRouter();
   const { items, total, loading, remove, refresh } = useCart();
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +90,7 @@ export default function CartScreen() {
 }
 
 function CartCourseRow({ course, removing, onRemove, onOpen }: { course: Course; removing: boolean; onRemove: () => void; onOpen: () => void }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.card}>
       <Pressable style={styles.courseInfo} onPress={onOpen} accessibilityRole="button">
@@ -105,7 +108,7 @@ function CartCourseRow({ course, removing, onRemove, onOpen }: { course: Course;
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background },
   list: { paddingTop: uiSpacing.md, paddingBottom: uiSpacing.gutter },
   card: { flexDirection: 'row', alignItems: 'center', marginHorizontal: uiSpacing.gutter, marginBottom: uiSpacing.md, padding: uiSpacing.md, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, borderWidth: 1, borderColor: uiColors.border, ...uiShadow.small },

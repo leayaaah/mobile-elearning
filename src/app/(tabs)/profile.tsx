@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useState } from 'react';
 import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,10 +9,11 @@ import { useAuth } from '../../context/AuthContext';
 import { getMyCourses, getProfile, getSavedCourses, removeBookmark, updateProfile } from '../../services/userService';
 import { useAsync } from '../../hooks/useAsync';
 import { ErrorView, Loading } from '../../components/ScreenState';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Course, Profile } from '../../types';
 
 export default function ProfileScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const { user } = useAuth();
   const router = useRouter();
   const [savedCourses, setSavedCourses] = useState<Course[]>([]);
@@ -101,9 +103,11 @@ export default function ProfileScreen() {
   );
 }
 
-function Stat({ value, label }: { value: string; label: string }) { return <View style={styles.stat}><Text style={styles.statValue}>{value}</Text><Text style={styles.statLabel}>{label}</Text></View>; }
+function Stat({ value, label }: { value: string; label: string }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles); return <View style={styles.stat}><Text style={styles.statValue}>{value}</Text><Text style={styles.statLabel}>{label}</Text></View>; }
 
 function SavedCourseRow({ course, onRemove, onOpen }: { course: Course; onRemove: () => void; onOpen: () => void }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.courseRow}>
       <Pressable style={styles.courseOpen} onPress={onOpen} accessibilityRole="button">
@@ -120,7 +124,7 @@ function SavedCourseRow({ course, onRemove, onOpen }: { course: Course; onRemove
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: uiColors.background }, list: { padding: uiSpacing.gutter, paddingBottom: uiSpacing.xl },
   headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: uiSpacing.gutter, paddingVertical: uiSpacing.sm },
   headerTitle: { flex: 1, color: uiColors.text, ...uiType.headlineSmall },

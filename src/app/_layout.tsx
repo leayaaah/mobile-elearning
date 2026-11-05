@@ -8,9 +8,11 @@ import { BookmarkProvider } from '../context/BookmarkContext';
 import { CartProvider } from '../context/CartContext';
 import { ChatSessionProvider } from '../context/ChatSessionContext';
 import { Loading } from '../components/ScreenState';
+import { ThemeProvider, useTheme } from '../context/ThemeContext';
 
 // Auth flow: chưa đăng nhập -> (auth), đã đăng nhập -> (tabs)
 function AuthGate() {
+  const { colors, resolved } = useTheme();
   const { session, loading } = useAuth();
   const { status: consentStatus, error: consentError } = useConsent();
   const segments = useSegments();
@@ -34,9 +36,9 @@ function AuthGate() {
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style={resolved === 'dark' ? 'light' : 'dark'} />
       <ChatSessionProvider key={session?.user.id ?? 'guest'}>
-        <Stack screenOptions={{ headerShown: false }}><Stack.Screen name="consent" options={{ presentation: 'modal' }} /></Stack>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}><Stack.Screen name="consent" options={{ presentation: 'modal' }} /></Stack>
       </ChatSessionProvider>
       {loading && (
         <View style={StyleSheet.absoluteFill}>
@@ -49,14 +51,16 @@ function AuthGate() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <ConsentProvider>
-        <BookmarkProvider>
-          <CartProvider>
-            <AuthGate />
-          </CartProvider>
-        </BookmarkProvider>
-      </ConsentProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ConsentProvider>
+          <BookmarkProvider>
+            <CartProvider>
+              <AuthGate />
+            </CartProvider>
+          </BookmarkProvider>
+        </ConsentProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

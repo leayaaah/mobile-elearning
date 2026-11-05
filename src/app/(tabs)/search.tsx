@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View,
@@ -14,7 +15,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { getCategories, getRecommendedCourses } from '../../services/courseService';
 import { searchCoursesWithAI } from '../../services/semanticSearchService';
 import { getPersonalizedCourses } from '../../services/recommendationService';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Category, Course, SearchResult } from '../../types';
 import { getErrorMessage } from '../../utils/format';
 
@@ -40,6 +41,7 @@ export default function SearchScreen() {
 }
 
 function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const { user } = useAuth();
   const { status: consentStatus, revision: consentRevision } = useConsent();
   const userId = user?.id;
@@ -240,7 +242,7 @@ function SearchContent({ initialCategoryId }: { initialCategoryId?: number }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background },
   content: { paddingBottom: uiSpacing.xl },
   safeArea: { backgroundColor: uiColors.background, paddingHorizontal: uiSpacing.gutter, paddingBottom: uiSpacing.md },

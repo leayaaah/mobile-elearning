@@ -41,6 +41,31 @@ export const uiColors = {
   onDanger: '#FFFFFF',
 } as const;
 
+export type UiColors = { [K in keyof typeof uiColors]: string };
+
+export const darkUiColors: UiColors = {
+  primary: '#C6BAFF',
+  primaryContainer: '#A99BFF',
+  primarySoft: '#332C58',
+  onPrimary: '#21184A',
+  text: '#F4F1FF',
+  textMuted: '#CDC8DE',
+  outline: '#ADA7C0',
+  border: '#625C73',
+  background: '#14121D',
+  surface: '#211E2B',
+  surfaceLow: '#2A2636',
+  surfaceContainer: '#332F42',
+  surfaceHigh: '#3D374D',
+  secondary: '#FFC562',
+  onSecondary: '#2C1A00',
+  success: '#85E3B7',
+  successSoft: '#174936',
+  danger: '#FFB4AB',
+  dangerSoft: '#4D2529',
+  onDanger: '#5A1210',
+};
+
 export const uiSpacing = {
   xs: 4,
   sm: 8,

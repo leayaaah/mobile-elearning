@@ -1,15 +1,17 @@
+import { useThemedStyles } from '../context/ThemeContext';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
 import { formatMinutes } from '../utils/format';
 import type { MyCourse } from '../types';
 
 type Props = { course: MyCourse };
 
 function MyCourseCardBase({ course }: Props) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const router = useRouter();
   const progress = Math.max(0, Math.min(100, course.progress));
   const hasLessons = course.lessons_count > 0;
@@ -42,7 +44,7 @@ function MyCourseCardBase({ course }: Props) {
 
 export const MyCourseCard = memo(MyCourseCardBase);
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   card: { flexDirection: 'row', gap: uiSpacing.md, padding: uiSpacing.md, marginBottom: uiSpacing.md, backgroundColor: uiColors.surface, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.lg, minHeight: 140, ...uiShadow.medium },
   thumbnail: { width: 96, height: 108, borderRadius: uiRadius.md, backgroundColor: uiColors.surfaceContainer },
   content: { flex: 1, minWidth: 0, justifyContent: 'space-between' },

@@ -1,7 +1,9 @@
+import { useThemedStyles } from '../context/ThemeContext';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { uiColors, uiRadius, uiSpacing, uiType } from '../theme';
+import { type UiColors, uiRadius, uiSpacing, uiType } from '../theme';
 
 export function Loading() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.center}>
       <ActivityIndicator size="large" color={uiColors.primary} />
@@ -10,6 +12,7 @@ export function Loading() {
 }
 
 export function ErrorView({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.center}>
       <Text style={styles.errorText}>{message}</Text>
@@ -22,7 +25,7 @@ export function ErrorView({ message, onRetry }: { message: string; onRetry?: () 
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: uiSpacing.lg, backgroundColor: uiColors.background },
   errorText: { color: uiColors.textMuted, ...uiType.bodyLarge, textAlign: 'center', marginBottom: uiSpacing.md },
   btn: { minHeight: 44, justifyContent: 'center', backgroundColor: uiColors.primary, paddingHorizontal: uiSpacing.lg, borderRadius: uiRadius.md },

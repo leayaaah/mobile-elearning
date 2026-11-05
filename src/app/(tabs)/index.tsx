@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
@@ -16,7 +17,7 @@ import { getPersonalizedCourses } from '../../services/recommendationService';
 import { CourseCard } from '../../components/CourseCard';
 import { SectionHeader } from '../../components/SectionHeader';
 import { ErrorView, Loading } from '../../components/ScreenState';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Category, Course, Teacher } from '../../types';
 
 type HomeData = {
@@ -37,6 +38,7 @@ async function loadHome(): Promise<HomeData> {
 const keyOf = (c: Course) => String(c.id);
 
 export default function HomeScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const router = useRouter();
   const { user } = useAuth();
   const { status: consentStatus, revision: consentRevision } = useConsent();
@@ -155,6 +157,7 @@ export default function HomeScreen() {
 }
 
 function HorizontalCourses({ courses }: { courses: Course[] }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <FlatList
       horizontal
@@ -168,7 +171,7 @@ function HorizontalCourses({ courses }: { courses: Course[] }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background },
   header: { backgroundColor: uiColors.background },
   headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: uiSpacing.gutter, paddingVertical: uiSpacing.sm },

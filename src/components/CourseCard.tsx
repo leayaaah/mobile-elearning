@@ -1,10 +1,11 @@
+import { useThemedStyles } from '../context/ThemeContext';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useBookmarks } from '../context/BookmarkContext';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
 import { formatPrice } from '../utils/format';
 import type { Course } from '../types';
 
@@ -16,6 +17,7 @@ type Props = {
 };
 
 function CourseCardBase({ course, variant = 'vertical' }: Props) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const router = useRouter();
   const { isSaved, toggle } = useBookmarks();
   const saved = isSaved(course.id);
@@ -70,7 +72,7 @@ function CourseCardBase({ course, variant = 'vertical' }: Props) {
 
 export const CourseCard = memo(CourseCardBase);
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   card: { backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, borderWidth: 1, borderColor: uiColors.border, padding: uiSpacing.md, ...uiShadow.small },
   cardV: { width: 260 },
   cardH: { flexDirection: 'row', gap: uiSpacing.md, marginHorizontal: uiSpacing.gutter, marginBottom: uiSpacing.md },

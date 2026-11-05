@@ -1,10 +1,12 @@
+import { useThemedStyles } from '../context/ThemeContext';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { uiColors, uiSpacing, uiType } from '../theme';
+import { type UiColors, uiSpacing, uiType } from '../theme';
 
 export function ScreenHeader({ title }: { title: string }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const router = useRouter();
   const goBack = () => {
     if (router.canGoBack()) router.back();
@@ -24,7 +26,7 @@ export function ScreenHeader({ title }: { title: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   safe: { backgroundColor: uiColors.background },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: uiSpacing.gutter, paddingVertical: uiSpacing.sm },
   backButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },

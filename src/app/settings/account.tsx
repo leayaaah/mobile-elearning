@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,9 +9,10 @@ import { useAuth } from '../../context/AuthContext';
 import { changePassword } from '../../services/accountService';
 import { getProfile, updateProfile } from '../../services/userService';
 import { useAsync } from '../../hooks/useAsync';
-import { uiColors, uiRadius, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiSpacing, uiType } from '../../theme';
 
 export default function AccountSettingsScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const { user } = useAuth();
   const [name, setName] = useState<string | null>(null);
   const [current, setCurrent] = useState('');
@@ -75,7 +77,7 @@ export default function AccountSettingsScreen() {
   </View>;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background }, fill: { flex: 1 }, content: { padding: uiSpacing.gutter, paddingBottom: uiSpacing.xl },
   form: { padding: uiSpacing.md, gap: uiSpacing.sm }, label: { color: uiColors.text, ...uiType.labelLarge },
   input: { minHeight: 48, paddingHorizontal: uiSpacing.md, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.md, color: uiColors.text, backgroundColor: uiColors.surface },

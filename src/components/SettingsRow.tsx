@@ -1,10 +1,12 @@
+import { useThemedStyles } from '../context/ThemeContext';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { uiColors, uiSpacing, uiType } from '../theme';
+import { type UiColors, uiSpacing, uiType } from '../theme';
 
 export function SettingsRow({ title, detail, onPress, disabled = false }: {
   title: string; detail?: string; onPress?: () => void; disabled?: boolean;
 }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return <Pressable
     onPress={onPress} disabled={disabled || !onPress} accessibilityRole="button"
     accessibilityState={{ disabled: disabled || !onPress }} style={styles.row}
@@ -15,7 +17,7 @@ export function SettingsRow({ title, detail, onPress, disabled = false }: {
   </Pressable>;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   row: { minHeight: 56, flexDirection: 'row', alignItems: 'center', paddingHorizontal: uiSpacing.md, paddingVertical: uiSpacing.sm, borderBottomWidth: 1, borderBottomColor: uiColors.border },
   text: { flex: 1 }, title: { color: uiColors.text, ...uiType.bodyLarge },
   disabled: { color: uiColors.textMuted }, detail: { color: uiColors.textMuted, ...uiType.bodySmall },

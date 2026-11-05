@@ -1,14 +1,16 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { SettingsSection } from '../../components/SettingsSection';
 import { useConsent } from '../../context/ConsentContext';
-import { uiColors, uiRadius, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiSpacing, uiType } from '../../theme';
 
 type ConfirmMode = 'disable' | 'delete' | null;
 
 export default function PrivacySettingsScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const { status, updatedAt, busy, error, reload, choose, deleteData } = useConsent();
   const [confirm, setConfirm] = useState<ConfirmMode>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export default function PrivacySettingsScreen() {
   </View>;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background }, content: { padding: uiSpacing.gutter, paddingBottom: uiSpacing.xl },
   card: { padding: uiSpacing.md, gap: uiSpacing.sm }, row: { flexDirection: 'row', alignItems: 'center', gap: uiSpacing.md }, text: { flex: 1 },
   title: { color: uiColors.text, ...uiType.bodyLarge, fontWeight: '700' }, description: { color: uiColors.textMuted, ...uiType.bodyMedium },

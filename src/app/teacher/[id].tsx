@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
@@ -7,9 +8,10 @@ import { getTeacher, getTeacherCourses } from '../../services/courseService';
 import { ErrorView, Loading } from '../../components/ScreenState';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { CourseCard } from '../../components/CourseCard';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 
 export default function TeacherScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const { id } = useLocalSearchParams<{ id?: string }>();
   const teacherId = typeof id === 'string' && /^\d+$/.test(id) ? Number(id) : null;
   const request = useAsync(async () => {
@@ -51,7 +53,7 @@ export default function TeacherScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: uiColors.background },
   list: { paddingBottom: uiSpacing.xl },
   profile: { padding: uiSpacing.gutter },
