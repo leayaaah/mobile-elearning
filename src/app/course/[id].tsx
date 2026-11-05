@@ -360,7 +360,7 @@ function ReviewsTab({
   selectedRating: number | null;
   onSelectRating: (rating: number | null) => void;
 }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.tabContent}>
       <View style={styles.reviewsSummary}>
@@ -403,7 +403,7 @@ function ReviewsTab({
 }
 
 function RatingChip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   return (
     <Pressable onPress={onPress} style={[styles.ratingChip, active && styles.ratingChipActive]}>
       <Text style={[styles.ratingChipText, active && styles.ratingChipTextActive]}>{label}</Text>

@@ -33,7 +33,7 @@ export default function MyCoursesScreen() {
       <Text style={styles.emptyTitle}>{request.data?.length ? 'Không có khóa học phù hợp' : 'Bạn chưa có khóa học nào'}</Text>
       <Text style={styles.emptyText}>{request.data?.length ? 'Hãy thử chọn tab khác.' : 'Các khóa học bạn ghi danh sẽ xuất hiện ở đây.'}</Text>
     </View>
-  ), [request.data]);
+  ), [request.data, styles.empty, styles.emptyText, styles.emptyTitle]);
 
   if (!user) return <SafeAreaView style={styles.screen}><ErrorView message="Vui lòng đăng nhập để xem khóa học của bạn." /></SafeAreaView>;
   if (request.loading && !request.data) return <SafeAreaView style={styles.screen}><Loading /></SafeAreaView>;

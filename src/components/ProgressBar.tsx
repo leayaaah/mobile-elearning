@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { type UiColors, uiRadius } from '../theme';
 
 export function ProgressBar({ progress }: { progress: number }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   return <View style={styles.track}><View style={[styles.fill, { width: `${Math.max(0, Math.min(100, progress))}%` }]} /></View>;
 }
 

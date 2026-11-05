@@ -318,7 +318,7 @@ function EmptyState({ text }: { text: string }) {
 }
 
 function InlineError({ message, onRetry }: { message: string; onRetry?: () => void }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.errorBox}>
       <Text style={styles.errorText}>{message}</Text>

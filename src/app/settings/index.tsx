@@ -11,7 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 import { type UiColors, uiRadius, uiSpacing, uiType } from '../../theme';
 
 export default function SettingsScreen() {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   const router = useRouter();
   const { signOut } = useAuth();
   const signingOutRef = useRef(false);

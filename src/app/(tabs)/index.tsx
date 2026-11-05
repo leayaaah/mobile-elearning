@@ -157,7 +157,7 @@ export default function HomeScreen() {
 }
 
 function HorizontalCourses({ courses }: { courses: Course[] }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   return (
     <FlatList
       horizontal

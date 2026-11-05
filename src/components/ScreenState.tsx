@@ -12,7 +12,7 @@ export function Loading() {
 }
 
 export function ErrorView({ message, onRetry }: { message: string; onRetry?: () => void }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.center}>
       <Text style={styles.errorText}>{message}</Text>

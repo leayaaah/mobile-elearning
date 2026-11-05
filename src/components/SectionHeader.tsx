@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { type UiColors, uiSpacing, uiType } from '../theme';
 
 export function SectionHeader({ title, onViewMore }: { title: string; onViewMore?: () => void }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.row}>
       <Text style={styles.title}>{title}</Text>

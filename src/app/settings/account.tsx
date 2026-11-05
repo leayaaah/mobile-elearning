@@ -12,7 +12,7 @@ import { useAsync } from '../../hooks/useAsync';
 import { type UiColors, uiRadius, uiSpacing, uiType } from '../../theme';
 
 export default function AccountSettingsScreen() {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   const { user } = useAuth();
   const [name, setName] = useState<string | null>(null);
   const [current, setCurrent] = useState('');

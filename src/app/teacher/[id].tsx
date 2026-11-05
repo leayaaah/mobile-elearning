@@ -11,7 +11,7 @@ import { CourseCard } from '../../components/CourseCard';
 import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 
 export default function TeacherScreen() {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   const { id } = useLocalSearchParams<{ id?: string }>();
   const teacherId = typeof id === 'string' && /^\d+$/.test(id) ? Number(id) : null;
   const request = useAsync(async () => {

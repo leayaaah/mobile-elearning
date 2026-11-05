@@ -7,7 +7,7 @@ import { useConsent } from '../context/ConsentContext';
 import { type UiColors, uiRadius, uiSpacing, uiType } from '../theme';
 
 export default function ConsentScreen() {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   const router = useRouter();
   const { choose, busy } = useConsent();
   const [error, setError] = useState<string | null>(null);

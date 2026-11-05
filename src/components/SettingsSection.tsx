@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { type UiColors, uiRadius, uiSpacing, uiType } from '../theme';
 
 export function SettingsSection({ title, children }: { title: string; children: ReactNode }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   return <View style={styles.section}>
     <Text style={styles.title}>{title}</Text>
     <View style={styles.body}>{children}</View>

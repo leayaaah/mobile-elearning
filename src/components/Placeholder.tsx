@@ -4,7 +4,7 @@ import { type UiColors, uiSpacing, uiType } from '../theme';
 
 // Màn hình tạm: thay bằng UI thật khi code tới
 export function Placeholder({ title, note }: { title: string; note?: string }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.box}>
       <Text style={styles.title}>{title}</Text>

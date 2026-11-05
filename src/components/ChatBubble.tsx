@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
 
 export function ChatBubble({ role, content, children }: { role: 'user' | 'assistant'; content: string; children?: ReactNode }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   return (
     <View style={[styles.bubble, role === 'user' ? styles.user : styles.assistant]}>
       <Text style={styles.text}>{content}</Text>

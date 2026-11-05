@@ -5,7 +5,7 @@ import { ScreenHeader } from './ScreenHeader';
 import { type UiColors, uiRadius, uiSpacing, uiType } from '../theme';
 
 export function LegalPending({ title }: { title: string }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { styles } = useThemedStyles(createStyles);
   return <View style={styles.root}>
     <ScreenHeader title={title} />
     <ScrollView contentContainerStyle={styles.content}>

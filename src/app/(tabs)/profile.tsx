@@ -104,7 +104,7 @@ export default function ProfileScreen() {
 }
 
 function Stat({ value, label }: { value: string; label: string }) {
-  const { colors: uiColors, styles } = useThemedStyles(createStyles); return <View style={styles.stat}><Text style={styles.statValue}>{value}</Text><Text style={styles.statLabel}>{label}</Text></View>; }
+  const { styles } = useThemedStyles(createStyles); return <View style={styles.stat}><Text style={styles.statValue}>{value}</Text><Text style={styles.statLabel}>{label}</Text></View>; }
 
 function SavedCourseRow({ course, onRemove, onOpen }: { course: Course; onRemove: () => void; onOpen: () => void }) {
   const { colors: uiColors, styles } = useThemedStyles(createStyles);
