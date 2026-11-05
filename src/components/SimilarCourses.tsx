@@ -1,11 +1,13 @@
+import { useThemedStyles } from '../context/ThemeContext';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CourseCard } from './CourseCard';
 import { useAsync } from '../hooks/useAsync';
 import { getSimilarCourses } from '../services/recommendationService';
-import { uiColors, uiSpacing, uiType } from '../theme';
+import { type UiColors, uiSpacing, uiType } from '../theme';
 import type { Course } from '../types';
 
 export function SimilarCourses({ course }: { course?: Course }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   // Handle null/undefined course prop safely by using the course.id for the hook dependency
   const safeCourseId = course?.id ?? 0;
   const { data, loading, error, reload } = useAsync(
@@ -29,7 +31,7 @@ export function SimilarCourses({ course }: { course?: Course }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   section: { paddingHorizontal: uiSpacing.gutter, marginTop: uiSpacing.lg },
   title: { color: uiColors.text, ...uiType.headlineSmall, marginBottom: uiSpacing.md },
   note: { color: uiColors.textMuted, ...uiType.bodyMedium },

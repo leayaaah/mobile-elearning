@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useThemedStyles } from '../../context/ThemeContext';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View,
 } from 'react-native';
@@ -16,7 +17,8 @@ import { useAsync } from '../../hooks/useAsync';
 import { getCourseById, getCurriculum, getReviews } from '../../services/courseService';
 import { enroll, getCompletedLessonIds, isEnrolled } from '../../services/userService';
 import { trackCourseView } from '../../services/trackingService';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
+import { useConsent } from '../../context/ConsentContext';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Course, Review, Section } from '../../types';
 import { formatMinutes, formatPrice, getErrorMessage, timeAgo } from '../../utils/format';
 
@@ -50,6 +52,7 @@ const tabs: { key: DetailTab; label: string }[] = [
 ];
 
 export default function CourseDetailScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const { id: rawId, enrollmentRequired: rawEnrollmentRequired } = useLocalSearchParams<{
     id?: string | string[];
     enrollmentRequired?: string | string[];
@@ -60,6 +63,8 @@ export default function CourseDetailScreen() {
     : rawEnrollmentRequired === '1';
   const courseId = Number(routeId);
   const { user } = useAuth();
+  const { status: consentStatus } = useConsent();
+  const lastViewKey = useRef<string | null>(null);
   const router = useRouter();
   const { isSaved, toggle } = useBookmarks();
   const cart = useCart();
@@ -79,8 +84,12 @@ export default function CourseDetailScreen() {
 
   const enrolled = Boolean(data?.enrolled || isEnrolledNow);
   useEffect(() => {
-    if (data?.course.id) void trackCourseView(user?.id, data.course.id);
-  }, [data?.course.id, user?.id]);
+    if (!data?.course.id || !user?.id) return;
+    const key = `${user.id}:${data.course.id}`;
+    if (lastViewKey.current === key) return;
+    lastViewKey.current = key;
+    void trackCourseView(user.id, data.course.id, consentStatus === 'granted');
+  }, [data?.course.id, user?.id, consentStatus]);
   const saved = data ? isSaved(data.course.id) : false;
   const alreadyInCart = data ? cart.has(data.course.id) : false;
   const visibleReviews = useMemo(() => {
@@ -235,6 +244,7 @@ function OverviewTab({
   enrolling: boolean;
   onOpenTeacher?: () => void;
 }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View>
       <View style={styles.heroWrap}>
@@ -303,6 +313,7 @@ function LessonsTab({ sections, expanded, onToggle }: {
   expanded: Set<number>;
   onToggle: (sectionId: number) => void;
 }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   if (sections.length === 0) {
     return <EmptyTab message="Khóa học chưa có chương hoặc bài học." />;
   }
@@ -349,6 +360,7 @@ function ReviewsTab({
   selectedRating: number | null;
   onSelectRating: (rating: number | null) => void;
 }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.tabContent}>
       <View style={styles.reviewsSummary}>
@@ -391,6 +403,7 @@ function ReviewsTab({
 }
 
 function RatingChip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <Pressable onPress={onPress} style={[styles.ratingChip, active && styles.ratingChipActive]}>
       <Text style={[styles.ratingChipText, active && styles.ratingChipTextActive]}>{label}</Text>
@@ -399,6 +412,7 @@ function RatingChip({ label, active, onPress }: { label: string; active: boolean
 }
 
 function Stars({ rating, size }: { rating: number; size: number }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.stars}>
       {[1, 2, 3, 4, 5].map((star) => (
@@ -409,6 +423,7 @@ function Stars({ rating, size }: { rating: number; size: number }) {
 }
 
 function EmptyTab({ message }: { message: string }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.emptyTab}>
       <Feather name="book-open" size={27} color={uiColors.textMuted} />
@@ -421,7 +436,7 @@ function averageRating(reviews: Review[]) {
   return reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background },
   tabBar: { flexDirection: 'row', backgroundColor: uiColors.surface, paddingHorizontal: uiSpacing.gutter, borderBottomWidth: 1, borderBottomColor: uiColors.border },
   tabButton: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', paddingVertical: uiSpacing.sm, borderBottomWidth: 2, borderBottomColor: 'transparent' },

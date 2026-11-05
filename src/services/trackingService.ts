@@ -4,8 +4,8 @@ const VIEW_INTERVAL_MS = 30 * 60 * 1000;
 const lastViews = new Map<string, number>();
 
 /** View is a weak signal. Action events are emitted by database triggers after success. */
-export async function trackCourseView(userId: string | undefined, courseId: number): Promise<void> {
-  if (!userId || !Number.isInteger(courseId) || courseId < 1) return;
+export async function trackCourseView(userId: string | undefined, courseId: number, consentGranted: boolean): Promise<void> {
+  if (!consentGranted || !userId || !Number.isInteger(courseId) || courseId < 1) return;
   const key = `${userId}:${courseId}`;
   const now = Date.now();
   if (now - (lastViews.get(key) ?? 0) < VIEW_INTERVAL_MS) return;

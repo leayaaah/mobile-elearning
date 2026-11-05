@@ -1,7 +1,9 @@
+import { useThemedStyles } from '../context/ThemeContext';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { uiColors, uiSpacing, uiType } from '../theme';
+import { type UiColors, uiSpacing, uiType } from '../theme';
 
 export function SectionHeader({ title, onViewMore }: { title: string; onViewMore?: () => void }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.row}>
       <Text style={styles.title}>{title}</Text>
@@ -14,7 +16,7 @@ export function SectionHeader({ title, onViewMore }: { title: string; onViewMore
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: uiSpacing.gutter, marginTop: uiSpacing.lg, marginBottom: uiSpacing.sm },
   title: { ...uiType.headlineSmall, color: uiColors.text, flex: 1 },
   moreButton: { minHeight: 44, justifyContent: 'center', paddingLeft: uiSpacing.sm },

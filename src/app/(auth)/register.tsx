@@ -1,12 +1,14 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import { getErrorMessage } from '../../utils/format';
 
 export default function RegisterScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const { signUp } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -68,7 +70,7 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: uiColors.background },
   container: { flex: 1, justifyContent: 'center', padding: uiSpacing.gutter },
   title: { ...uiType.displayMobile, color: uiColors.text },

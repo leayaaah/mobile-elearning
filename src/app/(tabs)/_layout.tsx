@@ -1,6 +1,7 @@
+import { useTheme } from '../../context/ThemeContext';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { uiColors, uiShadow, uiSpacing, uiType } from '../../theme';
+import { uiShadow, uiSpacing, uiType } from '../../theme';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -12,6 +13,7 @@ const TAB_ICONS: Record<string, [IconName, IconName]> = {
 };
 
 export default function TabsLayout() {
+  const { colors: uiColors } = useTheme();
   return (
     <Tabs
       screenOptions={({ route }) => ({

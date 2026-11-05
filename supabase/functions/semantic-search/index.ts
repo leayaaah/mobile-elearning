@@ -20,11 +20,14 @@ Deno.serve(async (req) => {
     if (countError) throw countError;
     if ((count ?? 0) >= 10) return json({ error: 'Rate limit exceeded' }, 429);
 
-    const admin = adminClient();
-    const { error: eventError } = await admin.from('user_events').insert({
-      user_id: user.id, course_id: null, event_type: 'course_search', metadata: {},
-    });
-    if (eventError) throw eventError;
+    const { data: profile } = await client.from('profiles')
+      .select('tracking_consent').eq('id', user.id).maybeSingle();
+    if (profile?.tracking_consent === true) {
+      const admin = adminClient();
+      await admin.from('user_events').insert({
+        user_id: user.id, course_id: null, event_type: 'course_search', metadata: {},
+      });
+    }
     const values = await embed(`task: search result | query: ${query}`);
     const { data, error } = await client.rpc('match_ai_courses', {
       p_embedding: vectorLiteral(values), p_limit: 60,

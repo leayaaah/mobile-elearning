@@ -1,18 +1,23 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { ConsentProvider, useConsent } from '../context/ConsentContext';
 import { BookmarkProvider } from '../context/BookmarkContext';
 import { CartProvider } from '../context/CartContext';
 import { ChatSessionProvider } from '../context/ChatSessionContext';
 import { Loading } from '../components/ScreenState';
+import { ThemeProvider, useTheme } from '../context/ThemeContext';
 
 // Auth flow: chưa đăng nhập -> (auth), đã đăng nhập -> (tabs)
 function AuthGate() {
+  const { colors, resolved } = useTheme();
   const { session, loading } = useAuth();
+  const { status: consentStatus, error: consentError } = useConsent();
   const segments = useSegments();
   const router = useRouter();
+  const promptedUser = useRef<string | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -21,11 +26,19 @@ function AuthGate() {
     else if (session && inAuthGroup) router.replace('/(tabs)');
   }, [session, loading, segments, router]);
 
+  useEffect(() => {
+    if (!session) { promptedUser.current = null; return; }
+    if (loading || consentStatus !== 'unset' || consentError || segments[0] === '(auth)' || segments[0] === 'consent') return;
+    if (promptedUser.current === session.user.id) return;
+    promptedUser.current = session.user.id;
+    router.push('/consent');
+  }, [session, loading, consentStatus, consentError, segments, router]);
+
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style={resolved === 'dark' ? 'light' : 'dark'} />
       <ChatSessionProvider key={session?.user.id ?? 'guest'}>
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}><Stack.Screen name="consent" options={{ presentation: 'modal' }} /></Stack>
       </ChatSessionProvider>
       {loading && (
         <View style={StyleSheet.absoluteFill}>
@@ -38,12 +51,16 @@ function AuthGate() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <BookmarkProvider>
-        <CartProvider>
-          <AuthGate />
-        </CartProvider>
-      </BookmarkProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ConsentProvider>
+          <BookmarkProvider>
+            <CartProvider>
+              <AuthGate />
+            </CartProvider>
+          </BookmarkProvider>
+        </ConsentProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

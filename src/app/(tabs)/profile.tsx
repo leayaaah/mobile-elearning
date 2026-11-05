@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useState } from 'react';
 import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,18 +9,18 @@ import { useAuth } from '../../context/AuthContext';
 import { getMyCourses, getProfile, getSavedCourses, removeBookmark, updateProfile } from '../../services/userService';
 import { useAsync } from '../../hooks/useAsync';
 import { ErrorView, Loading } from '../../components/ScreenState';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Course, Profile } from '../../types';
 
 export default function ProfileScreen() {
-  const { user, signOut } = useAuth();
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
+  const { user } = useAuth();
   const router = useRouter();
   const [savedCourses, setSavedCourses] = useState<Course[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [editVisible, setEditVisible] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [saveLoading, setSaveLoading] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const request = useAsync(async () => {
     if (!user) throw new Error('Vui lòng đăng nhập để xem hồ sơ');
@@ -54,11 +55,6 @@ export default function ProfileScreen() {
       Alert.alert('Không thể bỏ lưu', error instanceof Error ? error.message : 'Vui lòng thử lại.');
     }
   };
-  const logout = async () => {
-    setSigningOut(true); setActionError(null);
-    try { await signOut(); } catch (error) { setActionError(error instanceof Error ? error.message : 'Đăng xuất thất bại'); setSigningOut(false); }
-  };
-
   if (!user) return <SafeAreaView style={styles.screen}><ErrorView message="Vui lòng đăng nhập để xem hồ sơ." /></SafeAreaView>;
   if (request.loading && !request.data) return <SafeAreaView style={styles.screen}><Loading /></SafeAreaView>;
   if (request.error && !request.data) return <SafeAreaView style={styles.screen}><ErrorView message={request.error} onRetry={request.reload} /></SafeAreaView>;
@@ -68,6 +64,12 @@ export default function ProfileScreen() {
   const completed = request.data.myCourses.filter((course) => course.progress >= 100).length;
   return (
     <SafeAreaView style={styles.screen}>
+      <View style={styles.headerRow}>
+        <Text style={styles.headerTitle}>Hồ sơ</Text>
+        <Pressable onPress={() => router.push('/settings')} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="Cài đặt">
+          <Ionicons name="settings-outline" size={24} color={uiColors.textMuted} />
+        </Pressable>
+      </View>
       <FlatList
         data={savedCourses}
         keyExtractor={(course) => String(course.id)}
@@ -94,7 +96,6 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       />
       {actionError && <Text style={styles.actionError}>{actionError}</Text>}
-      <Pressable style={styles.logout} onPress={logout} disabled={signingOut}><Text style={styles.logoutText}>{signingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}</Text></Pressable>
       <Modal visible={editVisible} transparent animationType="slide" onRequestClose={() => setEditVisible(false)}>
         <KeyboardAvoidingView style={styles.modalBackdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><View style={styles.modal}><Text style={styles.modalTitle}>Chỉnh sửa hồ sơ</Text><Text style={styles.label}>Họ tên</Text><TextInput value={nameDraft} onChangeText={setNameDraft} style={styles.input} autoFocus maxLength={120} /><View style={styles.modalActions}><Pressable onPress={() => setEditVisible(false)} style={styles.cancel}><Text style={styles.cancelText}>Hủy</Text></Pressable><Pressable onPress={saveName} disabled={saveLoading} style={styles.save}><Text style={styles.saveText}>{saveLoading ? 'Đang lưu...' : 'Lưu'}</Text></Pressable></View></View></KeyboardAvoidingView>
       </Modal>
@@ -102,9 +103,11 @@ export default function ProfileScreen() {
   );
 }
 
-function Stat({ value, label }: { value: string; label: string }) { return <View style={styles.stat}><Text style={styles.statValue}>{value}</Text><Text style={styles.statLabel}>{label}</Text></View>; }
+function Stat({ value, label }: { value: string; label: string }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles); return <View style={styles.stat}><Text style={styles.statValue}>{value}</Text><Text style={styles.statLabel}>{label}</Text></View>; }
 
 function SavedCourseRow({ course, onRemove, onOpen }: { course: Course; onRemove: () => void; onOpen: () => void }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.courseRow}>
       <Pressable style={styles.courseOpen} onPress={onOpen} accessibilityRole="button">
@@ -121,13 +124,16 @@ function SavedCourseRow({ course, onRemove, onOpen }: { course: Course; onRemove
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: uiColors.background }, list: { padding: uiSpacing.gutter, paddingBottom: uiSpacing.xl },
+  headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: uiSpacing.gutter, paddingVertical: uiSpacing.sm },
+  headerTitle: { flex: 1, color: uiColors.text, ...uiType.headlineSmall },
+  iconBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.md },
   top: { flexDirection: 'row', alignItems: 'center', gap: uiSpacing.md, padding: uiSpacing.md, marginBottom: uiSpacing.md, backgroundColor: uiColors.surface, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.lg, ...uiShadow.small },
   avatarWrap: { width: 64, height: 64, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.pill, backgroundColor: uiColors.primarySoft, overflow: 'hidden' }, avatar: { width: '100%', height: '100%' }, initials: { color: uiColors.primary, ...uiType.headlineLarge, fontWeight: '800' }, identity: { flex: 1, minWidth: 0 }, name: { color: uiColors.text, ...uiType.headlineMedium, fontWeight: '800' }, email: { color: uiColors.textMuted, ...uiType.bodySmall, marginTop: uiSpacing.xs },
   stats: { flexDirection: 'row', paddingVertical: uiSpacing.md, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, borderWidth: 1, borderColor: uiColors.border, ...uiShadow.small }, stat: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: uiSpacing.xs }, statValue: { color: uiColors.primary, ...uiType.headlineLarge, fontWeight: '800' }, statLabel: { color: uiColors.textMuted, ...uiType.labelSmall, marginTop: uiSpacing.xs, textAlign: 'center' },
   sectionTitle: { color: uiColors.text, ...uiType.headlineMedium, marginTop: uiSpacing.lg, marginBottom: uiSpacing.md }, courseRow: { flexDirection: 'row', alignItems: 'center', gap: uiSpacing.md, padding: uiSpacing.md, marginBottom: uiSpacing.md, backgroundColor: uiColors.surface, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.lg, ...uiShadow.small }, courseOpen: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: uiSpacing.md, minHeight: 88 }, courseImage: { width: 88, height: 88, borderRadius: uiRadius.md, backgroundColor: uiColors.surfaceContainer }, courseInfo: { flex: 1, minWidth: 0 }, courseTitle: { color: uiColors.text, ...uiType.bodyLarge, fontWeight: '700' }, courseTeacher: { color: uiColors.textMuted, ...uiType.bodySmall, marginTop: uiSpacing.xs }, empty: { alignItems: 'center', padding: uiSpacing.xl, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, ...uiShadow.small }, emptyTitle: { color: uiColors.text, ...uiType.headlineSmall, marginTop: uiSpacing.md }, emptyText: { color: uiColors.textMuted, ...uiType.bodyMedium, textAlign: 'center', marginTop: uiSpacing.sm },
-  logout: { minHeight: 48, margin: uiSpacing.gutter, marginTop: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: uiColors.dangerSoft, borderWidth: 1, borderColor: uiColors.danger, borderRadius: uiRadius.md }, logoutText: { color: uiColors.danger, ...uiType.labelLarge, fontWeight: '700' }, actionError: { color: uiColors.danger, ...uiType.bodySmall, textAlign: 'center', paddingHorizontal: uiSpacing.gutter, marginBottom: uiSpacing.sm },
+  actionError: { color: uiColors.danger, ...uiType.bodySmall, textAlign: 'center', paddingHorizontal: uiSpacing.gutter, marginBottom: uiSpacing.sm },
   editButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.md, backgroundColor: uiColors.surfaceLow },
   removeSavedButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: uiRadius.pill, backgroundColor: uiColors.surfaceLow },
   modalBackdrop: { flex: 1, justifyContent: 'center', backgroundColor: 'rgba(19,27,46,0.42)' }, modal: { marginHorizontal: uiSpacing.gutter, padding: uiSpacing.lg, backgroundColor: uiColors.surface, borderRadius: uiRadius.lg, ...uiShadow.large }, modalTitle: { color: uiColors.text, ...uiType.headlineMedium, marginBottom: uiSpacing.gutter }, label: { color: uiColors.textMuted, ...uiType.labelLarge, marginBottom: uiSpacing.xs }, input: { minHeight: 48, backgroundColor: uiColors.surfaceLow, color: uiColors.text, ...uiType.bodyMedium, padding: uiSpacing.md, borderWidth: 1, borderColor: uiColors.border, borderRadius: uiRadius.md }, modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: uiSpacing.md, marginTop: uiSpacing.lg }, cancel: { minHeight: 44, justifyContent: 'center', paddingHorizontal: uiSpacing.md }, cancelText: { color: uiColors.textMuted, ...uiType.labelLarge }, save: { minHeight: 48, justifyContent: 'center', paddingHorizontal: uiSpacing.lg, backgroundColor: uiColors.primary, borderRadius: uiRadius.md }, saveText: { color: uiColors.onPrimary, ...uiType.labelLarge },

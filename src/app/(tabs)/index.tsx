@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
@@ -5,6 +6,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
+import { useConsent } from '../../context/ConsentContext';
 import { useCart } from '../../context/CartContext';
 import { useAsync } from '../../hooks/useAsync';
 import {
@@ -15,7 +17,7 @@ import { getPersonalizedCourses } from '../../services/recommendationService';
 import { CourseCard } from '../../components/CourseCard';
 import { SectionHeader } from '../../components/SectionHeader';
 import { ErrorView, Loading } from '../../components/ScreenState';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { Category, Course, Teacher } from '../../types';
 
 type HomeData = {
@@ -36,8 +38,10 @@ async function loadHome(): Promise<HomeData> {
 const keyOf = (c: Course) => String(c.id);
 
 export default function HomeScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const router = useRouter();
   const { user } = useAuth();
+  const { status: consentStatus, revision: consentRevision } = useConsent();
   const userId = user?.id;
   const { items: cartItems } = useCart();
   const { data, loading, error, reload } = useAsync(loadHome, []);
@@ -45,14 +49,16 @@ export default function HomeScreen() {
   const [personalized, setPersonalized] = useState<Course[] | null>(null);
 
   useFocusEffect(useCallback(() => {
+    void consentRevision;
     let active = true;
-    void getPersonalizedCourses(userId).then((courses) => {
+    setPersonalized(null);
+    void getPersonalizedCourses(userId, 8, consentStatus === 'granted').then((courses) => {
       if (active) setPersonalized(courses);
     }).catch((cause: unknown) => {
       if (__DEV__) console.warn('Không thể tải gợi ý cá nhân.', cause);
     });
     return () => { active = false; };
-  }, [userId]));
+  }, [userId, consentStatus, consentRevision]));
 
   const name = (user?.user_metadata?.full_name as string | undefined) || 'bạn';
 
@@ -64,7 +70,7 @@ export default function HomeScreen() {
       reload();
       // Safe handling: only call getPersonalizedCourses if userId is valid
       if (userId) {
-        setPersonalized(await getPersonalizedCourses(userId));
+        setPersonalized(await getPersonalizedCourses(userId, 8, consentStatus === 'granted'));
       } else {
         setPersonalized(null);
       }
@@ -73,7 +79,7 @@ export default function HomeScreen() {
     } finally {
       setRefreshing(false);
     }
-  }, [reload, userId]);
+  }, [reload, userId, consentStatus]);
 
   if (loading && !data) return <Loading />;
   if (error && !data) return <ErrorView message={error} onRetry={reload} />;
@@ -151,6 +157,7 @@ export default function HomeScreen() {
 }
 
 function HorizontalCourses({ courses }: { courses: Course[] }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <FlatList
       horizontal
@@ -164,7 +171,7 @@ function HorizontalCourses({ courses }: { courses: Course[] }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background },
   header: { backgroundColor: uiColors.background },
   headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: uiSpacing.gutter, paddingVertical: uiSpacing.sm },

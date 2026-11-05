@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../../context/ThemeContext';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator, Alert, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
@@ -13,7 +14,7 @@ import { getCurriculum, getQAPosts, getResources } from '../../services/courseSe
 import {
   createQAPost, getCompletedLessonIds, isEnrolled, markLessonDone,
 } from '../../services/userService';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../../theme';
 import type { CourseResource, Lesson, QAPost, Section } from '../../types';
 import { formatDuration, getErrorMessage, timeAgo } from '../../utils/format';
 
@@ -29,6 +30,7 @@ const tabs: { key: Tab; label: string; icon: keyof typeof Ionicons.glyphMap }[] 
 ];
 
 export default function LearnScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const { id: rawId } = useLocalSearchParams<{ id?: string | string[] }>();
   const routeId = Array.isArray(rawId) ? rawId[0] : rawId;
   const courseId = Number(routeId);
@@ -311,10 +313,12 @@ export default function LearnScreen() {
 }
 
 function EmptyState({ text }: { text: string }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return <View style={styles.emptyState}><Ionicons name="file-tray-outline" size={28} color={uiColors.textMuted} /><Text style={styles.emptyText}>{text}</Text></View>;
 }
 
 function InlineError({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   return (
     <View style={styles.errorBox}>
       <Text style={styles.errorText}>{message}</Text>
@@ -329,7 +333,7 @@ function openExternalLink(url: string) {
   });
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background },
   flex: { flex: 1 },
   tabBar: { flexDirection: 'row', backgroundColor: uiColors.surface, borderBottomWidth: 1, borderBottomColor: uiColors.border },

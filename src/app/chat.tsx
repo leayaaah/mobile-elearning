@@ -1,3 +1,4 @@
+import { useThemedStyles } from '../context/ThemeContext';
 import { useRef } from 'react';
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,7 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useChatSession, type ChatMessage } from '../context/ChatSessionContext';
 import { sendAdvisorMessage } from '../services/chatService';
 import { AdvisorError, type ChatTurn } from '../types/ai';
-import { uiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
+import { type UiColors, uiRadius, uiShadow, uiSpacing, uiType } from '../theme';
 
 const errorText = (cause: unknown) => {
   if (cause instanceof AdvisorError) {
@@ -25,6 +26,7 @@ const errorText = (cause: unknown) => {
 };
 
 export default function ChatScreen() {
+  const { colors: uiColors, styles } = useThemedStyles(createStyles);
   const router = useRouter();
   const { user } = useAuth();
   const { messages, setMessages, draft, setDraft, pending, setPending, failure, setFailure, retryText, setRetryText, nextIdRef, sendingRef } = useChatSession();
@@ -98,7 +100,7 @@ export default function ChatScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (uiColors: UiColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: uiColors.background }, flex: { flex: 1 },
   header: { minHeight: 56, paddingLeft: uiSpacing.gutter, paddingRight: uiSpacing.sm, backgroundColor: uiColors.background, borderBottomWidth: 1, borderColor: uiColors.border, flexDirection: 'row', alignItems: 'center' },
   closeButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
