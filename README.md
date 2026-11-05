@@ -1,83 +1,130 @@
-# E-Learning App – bộ khung khởi đầu (Expo Router + TypeScript + Supabase)
+# E-Learning App
 
-> Giai đoạn 2 AI: xem [hướng dẫn MVP và kiểm thử](docs/ai-mvp.md). SQL AI hiện chỉ là
-> [bản đề xuất để review](supabase/proposals/20261103_ai_mvp.sql), chưa áp dụng lên database.
-> Chatbot tư vấn khóa học có [SQL proposal riêng](supabase/proposals/20261105_ai_chatbot.sql)
-> và [bộ câu hỏi thử](docs/ai-chatbot-test-cases.md); triển khai sau AI MVP.
+Ứng dụng học trực tuyến viết bằng Expo, React Native và TypeScript. Supabase cung cấp xác thực, PostgreSQL và các chức năng backend. Giao diện hỗ trợ khám phá khóa học, tìm kiếm, trợ lý tư vấn, giỏ hàng, ghi danh, học bài và theo dõi tiến độ.
 
-Gói này gồm **schema + dữ liệu mẫu Supabase** và **code nền** (đăng nhập, context, service, cache, Trang chủ và các màn hình Bước 6 đã triển khai).
+## Tính năng
 
-## 1. Tạo project Expo và ghép code
+- Đăng ký, đăng nhập, hồ sơ và cài đặt giao diện.
+- Trang chủ, danh mục, tìm kiếm từ khóa và tìm kiếm ngữ nghĩa khi backend AI được triển khai.
+- Chi tiết khóa học, chương/bài học, đánh giá, bookmark và khóa học tương tự.
+- Giỏ hàng, ghi danh thử nghiệm, màn học, hỏi đáp và tiến độ.
+- Trợ lý AI tư vấn khóa học khi Edge Function, secrets và embeddings đã được cấu hình.
+- Cache dữ liệu trang chủ bằng AsyncStorage; tìm kiếm có debounce và phân trang.
 
-```bash
-npx create-expo-app@latest elearning --template default
-cd elearning
-```
+## Công nghệ chính
 
-- Xóa thư mục `app/` (hoặc `src/app/` nếu template của bạn đặt route trong `src/`) của template.
-- Chép `app/`, `src/`, `.env.example` từ gói này vào thư mục gốc project.
-  Nếu template dùng `src/app/` thì chuyển `app/` của gói vào `src/app/` và đổi các import `../src/...` cho đúng.
-- Cài thư viện (dùng `expo install` để đúng phiên bản theo SDK):
+- Expo SDK 58, React Native 0.88, React 19, TypeScript 6.
+- Expo Router 58.
+- Supabase JS 2, Supabase Auth, PostgreSQL, RLS, RPC và Edge Functions.
+- AsyncStorage và Expo Image.
 
-```bash
-npx expo install @supabase/supabase-js @react-native-async-storage/async-storage react-native-url-polyfill expo-image
-```
+Phiên bản package chính xác được khóa trong `package-lock.json`.
 
-`expo-router`, `@expo/vector-icons`, `react-native-safe-area-context`, `expo-status-bar` đã có sẵn trong template mặc định.
+## Yêu cầu
 
-## 2. Thiết lập Supabase
+- Node.js và npm.
+- Điện thoại có Expo Go, hoặc Android emulator/macOS iOS simulator nếu muốn chạy trên giả lập.
+- Dự án Supabase để chạy ứng dụng với dữ liệu backend.
+- Git.
 
-1. Tạo project trên supabase.com.
-2. **SQL Editor** → chạy `supabase/schema.sql`, rồi chạy `supabase/seed.sql`.
-3. **Authentication → Providers → Email**: tắt *Confirm email* khi đang phát triển (nếu không, đăng ký xong phải xác nhận email mới đăng nhập được).
-4. **Project Settings → API**: copy *Project URL* và *anon public key*.
-5. Đổi tên `.env.example` thành `.env` và điền hai giá trị trên.
+## Cài đặt và chạy
 
-## 3. Chạy
+### 1. Lấy source
 
 ```bash
-npx expo start -c
+git clone <URL_REPOSITORY>
+cd mobile-elearning
+npm ci
 ```
 
-Mở bằng Expo Go. Đăng ký tài khoản → vào Trang chủ.
+Nếu source đã có sẵn, mở terminal tại thư mục gốc dự án.
 
-## Cấu trúc
+### 2. Cấu hình biến môi trường
 
-```
-app/                    # Expo Router (mỗi file = một màn hình)
-  _layout.tsx           # Providers + Auth flow (chưa đăng nhập → (auth), đã đăng nhập → (tabs))
-  (auth)/login, register
-  (tabs)/index, search, my-courses, profile
-  course/[id], learn/[id], teacher/[id], cart
-src/
-  lib/                  # supabase client, cache (AsyncStorage + TTL)
-  services/             # gọi Supabase: courseService, userService, cartService
-  context/              # Auth, Cart, Bookmark
-  hooks/                # useAsync (loading/error/finally), useDebounce
-  components/           # CourseCard, SectionHeader, ScreenState, ...
-  theme/, types/, utils/
-supabase/               # schema.sql, seed.sql
+Tạo file `.env` cạnh `package.json`:
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon-public-key>
 ```
 
-## Tiến độ màn hình
+Lấy hai giá trị này trong Supabase **Project Settings → API**. Không đưa `service_role` key hoặc Gemini API key vào app Expo hay Git. `.env` đã được gitignore.
 
-| Màn hình | Trạng thái | Hàm service cần dùng |
-|---|---|---|
-| Đăng nhập / Đăng ký | Xong | `useAuth()` |
-| Trang chủ | Xong (có cache, kéo để làm mới) | – |
-| Tìm kiếm + kết quả | TODO | `searchCourses`, `useDebounce` |
-| Chi tiết khóa học | TODO | `getCourseById`, `getCurriculum`, `getReviews`, `getSimilarCourses`, `useCart().add` |
-| Màn học | TODO | `getCurriculum`, `getResources`, `getQAPosts`, `markLessonDone` |
-| Khóa học của tôi | Xong Bước 6 | `getMyCourses` |
-| Hồ sơ giảng viên | Xong Bước 6 | `getTeacher`, `getTeacherCourses` |
-| Hồ sơ người dùng | Xong Bước 6 | `getProfile`, `getSavedCourses`, `updateProfile`, `signOut` |
-| Giỏ hàng | TODO | `useCart()` |
-| Thanh toán giả lập (mở rộng) | Sẵn RPC | `useCart().checkout()` |
+### 3. Khởi tạo Supabase database mới
 
-## Lưu ý
+Chỉ áp dụng hướng dẫn này cho **database trống mới tạo**:
 
-- Video bài học trong seed đang dùng một link mẫu chung; thay bằng video thật sau cùng. Màn học hiện mở liên kết video bằng trình duyệt/ứng dụng phù hợp trên thiết bị.
-- `insert own enrollments` được giữ tạm trong schema để kiểm thử trước khi hoàn tất luồng checkout ở Bước 7; sau khi checkout chạy được, cần bỏ policy này và chỉ cho phép ghi danh qua `checkout_cart()`.
-- `course_resources` và `qa_posts` chỉ đọc được bởi người đã ghi danh; `lesson_progress` chỉ được thêm khi bài thuộc khóa học đã ghi danh. `video_url` vẫn được đọc công khai qua policy `lessons` hiện tại.
-- Policy tiến độ hiện không cho xóa bản ghi hoàn thành, nên màn học chỉ hỗ trợ đánh dấu hoàn thành một chiều.
-- Code chưa được chạy thử trên thiết bị (đã kiểm tra cú pháp), nếu gặp lỗi build hãy gửi log để sửa.
+1. Mở Supabase **SQL Editor**.
+2. Chạy `supabase/schema.sql` một lần. File này gồm schema nghiệp vụ, RLS, checkout giả lập, AI MVP, consent và quota chatbot.
+3. Chạy `supabase/seed.sql` để nạp dữ liệu mẫu khóa học, giảng viên và bài học.
+4. Nếu dùng đăng ký email trong môi trường demo, cấu hình Email provider theo chính sách xác nhận email của nhóm.
+
+Không chạy lại `schema.sql` trên database đã có dữ liệu. Với database đang tồn tại, cần đối chiếu schema thực tế, backup và dùng kế hoạch migration riêng; không chạy chồng các proposal lên nhau theo README này.
+
+### 4. Chạy ứng dụng
+
+```bash
+npx expo start
+```
+
+- Expo Go: quét QR code bằng điện thoại; nếu không kết nối được LAN, thử `npx expo start --tunnel`.
+- Android emulator: `npm run android`.
+- iOS simulator: `npm run ios` trên macOS.
+- Web: `npm run web`.
+
+Sau khi thay đổi cấu hình mà Metro vẫn giữ cache cũ, chạy `npx expo start -c`.
+
+### 5. Kiểm tra source
+
+```bash
+npx expo lint
+npx tsc --noEmit
+```
+
+## Cấu hình chức năng AI
+
+`schema.sql` thiết lập các bảng, RLS và RPC cho AI, nhưng **không tự deploy Supabase Edge Functions, không tạo embedding và không cấu hình Gemini secret**. Để bật semantic search, gợi ý AI và chatbot cần:
+
+1. Đọc `docs/ai-mvp.md` và xác nhận môi trường Supabase phù hợp.
+2. Cấu hình Gemini key trong Supabase Function Secrets, không trong `.env` của app.
+3. Deploy các functions phù hợp trong `supabase/functions/` theo hướng dẫn Supabase.
+4. Tạo embeddings cho khóa học trước khi kiểm thử semantic search/chatbot.
+5. Chạy các ca trong `docs/ai-chatbot-test-cases.md`; đo độ trễ theo `docs/ai-chatbot-latency.md` nếu cần báo cáo số liệu.
+
+Quota chatbot (`ai_chat_usage` và `increment_chat_usage`) đã nằm trong schema gộp. Không chạy riêng `supabase/proposals/20261105_ai_chatbot.sql` lên database vừa khởi tạo bằng schema này vì proposal đó tạo lại các đối tượng quota.
+
+## Cấu trúc dự án
+
+```text
+src/app/              Route và màn hình Expo Router
+src/components/       Thành phần giao diện dùng lại
+src/context/          Auth, cart, bookmark, consent, theme, chat session
+src/hooks/            Hook dùng chung
+src/services/         Truy cập Supabase và nghiệp vụ
+src/lib/              Supabase client, cache
+src/types/            Kiểu dữ liệu TypeScript
+supabase/schema.sql   Schema bootstrap cho database mới
+supabase/seed.sql     Dữ liệu demo
+supabase/functions/   Edge Functions
+supabase/proposals/   Proposal SQL lịch sử/thay đổi cần review
+supabase/pending/     Thay đổi đang chờ điều kiện triển khai
+docs/                 Hướng dẫn, ghi chú bảo mật và kiểm thử AI
+```
+
+## Giới hạn và lưu ý triển khai
+
+- Thanh toán hiện là giả lập qua RPC `checkout_cart()`; chưa kết nối cổng thanh toán thật.
+- Schema giữ policy tự ghi danh miễn phí để phục vụ kiểm thử. Chỉ gỡ policy trong `supabase/pending/20261029000000_remove_self_enroll.sql` sau khi checkout được xác minh và nhóm quyết định đóng tính năng ghi danh miễn phí.
+- Seed dùng URL video mẫu. `lessons.video_url` đang được app đọc và policy đọc lessons là công khai; không thêm video trả phí/có bản quyền trước khi chuyển sang thiết kế video được bảo vệ. Không chạy `supabase/pending/20261029000001_lesson_videos.sql` trước khi cập nhật client đồng bộ.
+- Điều khoản và chính sách quyền riêng tư trong app là nội dung chờ phê duyệt, không phải văn bản pháp lý hoàn chỉnh.
+- AI chỉ hoạt động khi database, Edge Functions, secrets và embeddings của môi trường đã được cấu hình. Mã nguồn/proposal không tự chứng minh dịch vụ đã được deploy.
+- Các SQL trong `supabase/proposals/` và `supabase/pending/` là thay đổi riêng cho database đã tồn tại hoặc đang chờ triển khai; review và backup trước khi áp dụng.
+
+## Tài liệu liên quan
+
+- [Hướng dẫn chạy source](docs/HUONG_DAN_CHAY_SOURCE.md)
+- [AI MVP và quy trình triển khai/kiểm thử](docs/ai-mvp.md)
+- [Ca kiểm thử chatbot](docs/ai-chatbot-test-cases.md)
+- [Hướng dẫn đo độ trễ chatbot](docs/ai-chatbot-latency.md)
+- [Ghi chú bảo mật video](docs/security-notes.md)
+- [Quy trình phát triển](quy-trinh.md)
