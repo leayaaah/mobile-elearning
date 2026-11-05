@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Appearance, useColorScheme } from 'react-native';
+import { Appearance, Platform, useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { darkUiColors, uiColors, type UiColors } from '../theme';
 
@@ -33,7 +33,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!loading) Appearance.setColorScheme(mode === 'system' ? null : mode);
+    // React Native Web does not implement Appearance.setColorScheme.
+    if (!loading && Platform.OS !== 'web') {
+      Appearance.setColorScheme(mode === 'system' ? 'auto' : mode);
+    }
   }, [mode, loading]);
 
   const setMode = useCallback(async (next: ThemeMode) => {
